@@ -47,6 +47,7 @@ export async function POST(req: NextRequest) {
     let channelName = ''
     let channelId = ''
     let thumbnail = ''
+    let description = ''
 
     if (prefilled) {
       videoId = prefilled.videoId
@@ -55,6 +56,7 @@ export async function POST(req: NextRequest) {
       channelId = prefilled.channelId
       thumbnail =
         prefilled.thumbnail || `https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`
+      description = (prefilled.description || '').slice(0, 300)
     } else {
       videoId = extractVideoId(url?.split('?si=')[0] || '')
       if (!videoId) {
@@ -91,6 +93,27 @@ export async function POST(req: NextRequest) {
         channelId = cidMatch[1]
       } else {
         channelId = authorUrl
+      }
+
+      // Fetch real description via YouTube Data API v3
+      const ytApiKey =
+        process.env.YOUTUBE_API_KEY ||
+        process.env.NEXT_PUBLIC_YOUTUBE_API_KEY ||
+        ''
+      if (ytApiKey) {
+        try {
+          const ytRes = await fetch(
+            `https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${videoId}&key=${ytApiKey}`,
+            { signal: AbortSignal.timeout(5000) }
+          )
+          if (ytRes.ok) {
+            const ytData = await ytRes.json()
+            const rawDesc = ytData.items?.[0]?.snippet?.description || ''
+            description = rawDesc.slice(0, 300)
+          }
+        } catch {
+          description = ''
+        }
       }
     }
 
@@ -177,7 +200,7 @@ Reply ONLY one word: movie OR natok OR music OR skip`
             channel_name: channelName,
             channel_id: channelId,
             is_hidden: false,
-            description: '',
+            description,
             published_at: new Date().toISOString(),
             content_type: 'movie',
           },
@@ -245,7 +268,7 @@ Reply ONLY one word: movie OR natok OR music OR skip`
         channel_name: channelName,
         channel_id: channelId,
         is_hidden: false,
-        description: '',
+        description,
         published_at: new Date().toISOString(),
         content_type: 'natok',
       }])
@@ -296,7 +319,7 @@ Reply ONLY one word: movie OR natok OR music OR skip`
             channel_name: channelName,
             channel_id: channelId,
             is_hidden: false,
-            description: '',
+            description,
             published_at: new Date().toISOString(),
           },
         ])
