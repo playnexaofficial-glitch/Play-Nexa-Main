@@ -1,0 +1,122 @@
+name: Build Play Nexa APK
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build-apk:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 22.x (LTS)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Node dependencies
+        run: |
+          echo "Node version: $(node -v)"
+          echo "NPM version: $(npm -v)"
+          npm install --legacy-peer-deps
+        env:
+          CI: false
+
+      - name: Build Next.js static export
+        run: |
+          echo "Starting Next.js static production export..."
+          npm run build:apk-export
+          echo "Next.js export finished."
+        env:
+          CI: false
+          NODE_ENV: production
+          NEXT_TELEMETRY_DISABLED: 1
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL || 'https://pbbjebvugyfxpdtvxrkr.supabase.co' }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBiYmplYnZ1Z3lmeHBkdHZ4cmtyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDAzODU4ODIsImV4cCI6MjA1NTk2MTg4Mn0.uLdQ2e2E_H4_4m00wS4rRjE3wN1t3Zf_8Z6pX1m0w5Q' }}
+          NEXT_PUBLIC_FIREBASE_API_KEY: ${{ secrets.NEXT_PUBLIC_FIREBASE_API_KEY || 'AIzaSyA_placeholder' }}
+          NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: ${{ secrets.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || 'play-nexa.firebaseapp.com' }}
+          NEXT_PUBLIC_FIREBASE_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'play-nexa' }}
+          NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: ${{ secrets.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || 'play-nexa.appspot.com' }}
+          NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || '1032202531081' }}
+          NEXT_PUBLIC_FIREBASE_APP_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_APP_ID || '1:1032202531081:android:e188279e1a3a45b780d265' }}
+          NEXT_PUBLIC_FCM_VAPID_KEY: ${{ secrets.NEXT_PUBLIC_FCM_VAPID_KEY || 'BHplaceholder' }}
+          NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL || 'https://playnexa.app' }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+
+      - name: Verify static export output
+        run: |
+          if [ -d "out" ] && [ -f "out/index.html" ]; then
+            echo "✅ 'out/' directory verified with index.html successfully."
+            echo "Total exported files: $(find out -type f | wc -l)"
+            ls -la out/ | head -20
+          else
+            echo "❌ ERROR: Static export 'out/' folder or 'out/index.html' missing!"
+            exit 1
+          fi
+
+      - name: Generate Android App Icons & Splash Drawables
+        run: |
+          echo "Generating native Android launcher icons and adaptive vector drawables..."
+          npm run generate:assets
+
+      - name: Sync Capacitor with Android
+        run: |
+          echo "Capacitor CLI version: $(npx cap --version)"
+          npx cap sync android
+
+      - name: Grant executable permissions to Gradle wrapper
+        run: chmod +x android/gradlew
+
+      - name: Compile Debug APK with Gradle
+        run: |
+          cd android
+          ./gradlew assembleDebug \
+            --no-daemon \
+            --stacktrace \
+            -Dorg.gradle.jvmargs="-Xmx2048m -XX:MaxMetaspaceSize=512m" \
+            -Dorg.gradle.daemon=false \
+            -Dkotlin.incremental=false \
+            -Dandroid.useAndroidX=true
+        env:
+          JAVA_HOME: ${{ env.JAVA_HOME }}
+          ANDROID_HOME: ${{ env.ANDROID_HOME }}
+
+      - name: Verify generated APK binary
+        run: |
+          APK_PATH="android/app/build/outputs/apk/debug/app-debug.apk"
+          if [ -f "$APK_PATH" ]; then
+            echo "✅ APK binary generated successfully!"
+            ls -lh "$APK_PATH"
+          else
+            echo "❌ ERROR: Output APK not found at $APK_PATH"
+            exit 1
+          fi
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: PlayNexa-Debug-APK-run-${{ github.run_number }}
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 30
+          if-no-files-found: error

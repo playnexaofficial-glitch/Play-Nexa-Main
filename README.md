@@ -1,2 +1,2 @@
-# Play-Nexa-Main
-Play Nexa Multi Media Platform 
+# Play-Nexa-
+Play Nexa — Next.js media streaming app

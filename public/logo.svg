@@ -1,0 +1,50 @@
+<svg
+  viewBox="0 0 200 200"
+  fill="none"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  <!-- Red rounded square background -->
+  <rect
+    x="0" y="0" width="200" height="200"
+    rx="44" ry="44"
+    fill="#CC0000"
+  />
+
+  <!-- N shape — main white body -->
+  <!-- Left vertical bar -->
+  <rect x="32" y="38" width="30" height="124" rx="8" fill="white" />
+  <!-- Right vertical bar -->
+  <rect x="138" y="38" width="30" height="124" rx="8" fill="white" />
+  <!-- Diagonal stroke top-left to bottom-right -->
+  <path
+    d="M62 48 L138 148"
+    stroke="white"
+    strokeWidth="30"
+    strokeLinecap="round"
+  />
+
+  <!-- Music waveform bars — left side -->
+  <rect x="20" y="84" width="5" height="20" rx="2.5" fill="#CC0000" />
+  <rect x="28" y="78" width="5" height="32" rx="2.5" fill="#CC0000" />
+  <rect x="36" y="88" width="5" height="14" rx="2.5" fill="#CC0000" />
+
+  <!-- Play button triangle — center -->
+  <path
+    d="M91 82 L91 118 L119 100 Z"
+    fill="#CC0000"
+  />
+
+  <!-- Gamepad icon — top right -->
+  <rect x="144" y="36" width="22" height="16" rx="5" fill="#CC0000" />
+  <circle cx="150" cy="42" r="2" fill="white" />
+  <circle cx="158" cy="42" r="2" fill="white" />
+  <circle cx="154" cy="38" r="2" fill="white" />
+  <circle cx="154" cy="46" r="2" fill="white" />
+
+  <!-- Download arrow — bottom right -->
+  <rect x="158" y="140" width="4" height="18" rx="2" fill="#CC0000" />
+  <path
+    d="M152 152 L160 164 L168 152 Z"
+    fill="#CC0000"
+  />
+</svg>
