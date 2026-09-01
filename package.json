@@ -6,7 +6,7 @@
     "dev": "next dev -p 3000 -H 0.0.0.0",
     "build": "next build",
     "build:export": "next build",
-    "build:apk-export": "node -e \"const fs=require('fs'),{execSync}=require('child_process');fs.copyFileSync('next.config.js','next.config.js.bak');fs.copyFileSync('next.config.apk.js','next.config.js');try{execSync('next build',{stdio:'inherit'})}finally{fs.copyFileSync('next.config.js.bak','next.config.js');fs.unlinkSync('next.config.js.bak')}\"",
+    "build:apk-export": "cp next.config.js next.config.js.bak && cp next.config.apk.js next.config.js && mv src/app/api/admin src/app/api/admin.disabled-for-apk && (next build; BUILD_EXIT=$?; mv src/app/api/admin.disabled-for-apk src/app/api/admin; cp next.config.js.bak next.config.js; rm -f next.config.js.bak; exit $BUILD_EXIT)",
     "export": "next build",
     "start": "next start -p 3000",
     "lint": "eslint .",
