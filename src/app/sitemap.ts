@@ -2,7 +2,6 @@ import type { MetadataRoute } from 'next'
 import { createClient } from '@supabase/supabase-js'
 import platformsData from '@/data/platforms.json'
 
-export const dynamic = 'force-static'
 export const revalidate = 3600
 
 const getBaseUrl = (): string => {

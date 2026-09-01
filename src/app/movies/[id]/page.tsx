@@ -2,8 +2,6 @@ import type { Metadata } from 'next'
 import { createClient } from '@supabase/supabase-js'
 import MovieWatchClient from '@/components/movies/MovieWatchClient'
 
-export const dynamic = 'force-static'
-
 const supabaseUrl =
   process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co'
 const supabaseKey =
