@@ -1,7 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    unoptimized: true,
     formats: ['image/webp'],
     minimumCacheTTL: 86400,
     remotePatterns: [

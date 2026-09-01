@@ -6,6 +6,7 @@ import { MusicProvider } from "@/context/MusicContext";
 import GlobalMiniPlayer from "@/components/GlobalMiniPlayer";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/react";
+import ServiceWorkerRegistrar from "@/components/ServiceWorkerRegistrar";
 import SystemWidgets from "@/components/SystemWidgets";
 
 
@@ -315,6 +316,7 @@ export default function RootLayout({
           <GlobalMiniPlayer />
           <SpeedInsights />
           <Analytics />
+          <ServiceWorkerRegistrar />
         </MusicProvider>
       </body>
       </html>
