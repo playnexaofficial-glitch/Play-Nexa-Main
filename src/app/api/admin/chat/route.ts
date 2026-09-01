@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { GoogleGenerativeAI } from '@google/generative-ai'
 
-export const dynamic = 'force-static'
 
 const SYSTEM = `You are Play Nexa AI Assistant.
 You help the admin with:

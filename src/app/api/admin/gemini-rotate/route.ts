@@ -1,4 +1,3 @@
-export const dynamic = 'force-static'
 // ── Play Nexa — Gemini Key Auto-Rotate API ───────────────────────
 // GET: Returns current active Gemini key (DB or env fallback)
 // POST: Updates key usage after API call

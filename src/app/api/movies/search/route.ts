@@ -3,7 +3,6 @@ import { NextRequest, NextResponse }
 import { supabaseAdmin }
   from '@/lib/supabaseAdmin'
 
-export const dynamic = 'force-static'
 
 const SEARCH_FIELDS =
   'id,youtube_id,title,thumbnail,' +

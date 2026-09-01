@@ -1,4 +1,3 @@
-export const dynamic = 'force-static'
 // ── Play Nexa — Channel Display API Route ──────────────────────
 // POST: upsert channel_display entry (badge color, visibility, etc.)
 // Uses service role key to bypass RLS

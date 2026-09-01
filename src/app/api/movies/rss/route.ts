@@ -1,4 +1,3 @@
-export const dynamic = 'force-static'
 // ── Play Nexa RSS Feed Proxy API Route ──────────────────────────
 // Fetches YouTube RSS XML server-side (avoids CORS)
 // Parses XML → JSON using regex (no external XML libraries needed)

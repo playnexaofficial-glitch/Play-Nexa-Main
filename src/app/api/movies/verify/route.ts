@@ -10,7 +10,6 @@ import { classifyVideo } from '@/lib/geminiScanner'
 import { isRealMovie } from '@/lib/types'
 
 export const runtime = 'nodejs'
-export const dynamic = 'force-static'
 
 const MOVIE_MIN_DURATION_SEC = 4200 // 70 minutes
 

@@ -1,4 +1,3 @@
-export const dynamic = 'force-static'
 // ── Play Nexa — Scan Jobs API Route ──────────────────────────
 // GET: list recent scan jobs for admin channel manager
 // Uses service role key to bypass RLS

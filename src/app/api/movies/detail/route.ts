@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabaseAdmin'
 
-export const dynamic = 'force-static'
 
 const REC_FIELDS =
   'id,youtube_id,title,thumbnail,' +

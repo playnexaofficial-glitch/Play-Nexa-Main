@@ -5,7 +5,6 @@ import { supabaseAdmin }
 import { GoogleGenerativeAI }
   from '@google/generative-ai'
 
-export const dynamic = 'force-static'
 
 function parseChannelId(url: string): string | null {
   const patterns = [

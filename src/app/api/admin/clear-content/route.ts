@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabaseAdmin'
 
-export const dynamic = 'force-static'
 
 export async function DELETE() {
   if (!supabaseAdmin) {

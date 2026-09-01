@@ -1,4 +1,3 @@
-export const dynamic = 'force-static'
 // ── Play Nexa Admin — YouTube Auto Importer API ───────────────────
 // Fetches uploads from a YouTube channel using Data API v3
 // Filters by duration > 60 mins + Bengali/English movie keywords

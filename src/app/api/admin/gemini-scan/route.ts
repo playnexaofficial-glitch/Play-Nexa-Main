@@ -1,4 +1,3 @@
-export const dynamic = 'force-static'
 // ── Play Nexa — Gemini AI Scan API Route ──────────────────────
 // Scans a YouTube channel's RSS feed using Gemini 1.5 Flash
 // Classifies each video as movie/music/skip

@@ -1,4 +1,3 @@
-export const dynamic = 'force-static'
 // ── Play Nexa — Sync All Channels API Route (Phase 2) ────────────
 // Triggers a sync for ALL active channels with auto_sync enabled.
 // Calls the sync-channel route for each channel sequentially

@@ -18,7 +18,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabaseAdmin'
 
 // ⛔ Force dynamic rendering — never cached at build time
-export const dynamic = 'force-static'
 export const revalidate = 0
 export const fetchCache = 'force-no-store'
 export const runtime = 'nodejs'

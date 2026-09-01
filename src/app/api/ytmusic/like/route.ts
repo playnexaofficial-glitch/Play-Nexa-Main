@@ -3,7 +3,6 @@ import { NextRequest, NextResponse }
 import { supabaseAdmin }
   from '@/lib/supabaseAdmin'
 
-export const dynamic = 'force-static'
 
 export async function GET(req: NextRequest) {
   try {

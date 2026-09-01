@@ -1,4 +1,3 @@
-export const dynamic = 'force-static'
 // ── Play Nexa — Channel Sync API Route (Phase 2) ────────────────
 // Triggers a manual sync for a specific YouTube channel.
 // Fetches recent videos from RSS, classifies by keywords,

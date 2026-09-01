@@ -1,4 +1,3 @@
-export const dynamic = 'force-static'
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabaseAdmin'
 import { GoogleGenerativeAI } from '@google/generative-ai'

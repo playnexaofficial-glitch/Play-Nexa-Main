@@ -1,4 +1,3 @@
-export const dynamic = 'force-static'
 // ── Play Nexa Admin — Feedback AI Route ──────────────────────────
 // AI-powered feedback analysis: priority, spam, duplicates, spikes
 // Server-side only — never exposes keys to client

@@ -1,4 +1,3 @@
-export const dynamic = 'force-static'
 // ── Play Nexa AI Smart Search — Natural Language Route ──────────
 // Users search with natural language (e.g. "Space movies with a sad ending")
 // Gemini interprets mood/intent → converts to DB query tags

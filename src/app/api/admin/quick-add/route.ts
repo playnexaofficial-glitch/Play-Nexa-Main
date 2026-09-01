@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabaseAdmin'
 import { GoogleGenerativeAI } from '@google/generative-ai'
 
-export const dynamic = 'force-static'
 
 function extractVideoId(url: string) {
   const patterns = [

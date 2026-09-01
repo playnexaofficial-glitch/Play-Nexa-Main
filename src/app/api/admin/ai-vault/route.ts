@@ -25,7 +25,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabaseAdmin'
 import type { AIProvider, VaultKey, VaultMode, FeatureFlag } from '@/lib/ai-vault'
 
-export const dynamic = 'force-static'
 export const runtime = 'nodejs'
 
 // ════════════════════════════════════════════════════════════

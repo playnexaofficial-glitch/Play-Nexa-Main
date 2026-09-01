@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server'
 
-export const dynamic = 'force-static'
 
 const CURRENT_VERSION = '1.0.0'
 const GITHUB_REPO =

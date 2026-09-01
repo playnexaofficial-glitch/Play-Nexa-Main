@@ -3,7 +3,6 @@ import { supabaseAdmin } from '@/lib/supabaseAdmin'
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import { importProgress } from '@/lib/import-progress'
 
-export const dynamic = 'force-static'
 
 // ─── YouTube API helpers ───
 

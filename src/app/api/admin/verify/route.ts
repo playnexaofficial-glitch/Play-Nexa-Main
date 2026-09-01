@@ -1,4 +1,3 @@
-export const dynamic = 'force-static'
 // ── Play Nexa — Admin Verification API Route ──────────────────
 // Verifies if a Supabase Auth user has admin role in admin_users
 // Uses service role key to bypass RLS on admin_users table

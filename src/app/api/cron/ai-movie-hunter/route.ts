@@ -1,4 +1,3 @@
-export const dynamic = 'force-static'
 // ── Play Nexa AI Movie Hunter — Nightly Cron Route ──────────────
 // Pipeline: Gemini suggests → YouTube fetches → Gemini verifies → Supabase saves
 // Called by cron job (e.g. Vercel Cron, Supabase pg_cron, or external scheduler)

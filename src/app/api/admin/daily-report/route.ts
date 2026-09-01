@@ -1,4 +1,3 @@
-export const dynamic = 'force-static'
 // ── Play Nexa Admin — Daily Report Cron ──────────────────────────
 // Generates daily feedback summary report
 // Triggered by Supabase CRON at midnight

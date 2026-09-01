@@ -7,7 +7,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabaseAdmin'
 
 export const runtime = 'nodejs'
-export const dynamic = 'force-static'
 
 // ── Auth check ──
 function verifyAdmin(req: NextRequest): boolean {

@@ -1,4 +1,3 @@
-export const dynamic = 'force-static'
 // ── Play Nexa — Gemini Key Health Check API ──────────────────────
 // Tests a Gemini API key with a minimal API call
 // Updates key status based on result (exhausted/standby)

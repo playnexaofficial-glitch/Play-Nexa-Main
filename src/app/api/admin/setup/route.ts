@@ -1,4 +1,3 @@
-export const dynamic = 'force-static'
 // ── Play Nexa — Admin Setup API Route ──────────────────────────
 // One-time setup: creates the first admin user in Supabase Auth
 // and inserts their UUID into admin_users table.

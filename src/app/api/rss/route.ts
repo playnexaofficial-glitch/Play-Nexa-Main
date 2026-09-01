@@ -1,4 +1,3 @@
-export const dynamic = 'force-static'
 // ── Play Nexa RSS Proxy API ──────────────────────────────────
 // Fetches YouTube RSS feeds server-side (avoids CORS issues)
 // Caches for 1 hour via Next.js revalidation
