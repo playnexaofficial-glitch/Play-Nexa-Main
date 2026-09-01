@@ -5,7 +5,7 @@ import InstallBanner from "@/components/InstallBanner";
 import { MusicProvider } from "@/context/MusicContext";
 import GlobalMiniPlayer from "@/components/GlobalMiniPlayer";
 import { SpeedInsights } from "@vercel/speed-insights/next";
-import { Analytics } from "@vercel/analytics/react";
+import { Analytics } from "@vercel/analytics/next";
 import ServiceWorkerRegistrar from "@/components/ServiceWorkerRegistrar";
 import SystemWidgets from "@/components/SystemWidgets";
 
