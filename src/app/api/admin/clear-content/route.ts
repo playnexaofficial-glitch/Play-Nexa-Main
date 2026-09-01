@@ -76,10 +76,16 @@ export async function DELETE() {
       .delete()
       .neq('id', '00000000-0000-0000-0000-000000000000')
 
+    // Also clear yt_channels (full channel removal, not just display metadata)
+    await supabaseAdmin
+      .from('yt_channels')
+      .delete()
+      .neq('id', '00000000-0000-0000-0000-000000000000')
+
     return NextResponse.json({
       success: true,
       message:
-        'All movies and music cleared. Channels kept intact for re-scanning.',
+        'All movies, music, and channels cleared. Ready for fresh import.',
     })
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 })
