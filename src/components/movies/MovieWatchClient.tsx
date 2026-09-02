@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import YouTubePlayer from '@/components/movies/YoutubePlayer'
 import ActionBar from '@/components/movies/ActionBar'
@@ -63,20 +64,46 @@ export default function MovieWatchClient({ id, initialMovie }: MovieWatchClientP
   // Load movie data + recommendations
   useEffect(() => {
     if (!id) return
+
+    // If initialMovie was already provided server-side, use it immediately
+    if (initialMovie) {
+      setMovie(initialMovie)
+      setIsLoading(false)
+
+      // Check bookmark immediately
+      const savedBookmark = localStorage.getItem(`pn_bookmark_${id}`)
+      if (savedBookmark) {
+        const time = parseInt(savedBookmark)
+        if (time > 30) {
+          setBookmarkTime(time)
+          setShowResumeBanner(true)
+        }
+      }
+
+      // Record watch history
+      if (userId && initialMovie.youtube_id) {
+        fetch('/api/movies/history', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId,
+            movieId: id,
+            youtubeId: initialMovie.youtube_id,
+          }),
+        }).catch(() => {})
+      }
+    }
+
     const load = async () => {
-      if (!movie) setIsLoading(true)
+      // Only show full loading skeleton if movie is not already available
+      if (!initialMovie && !movie) setIsLoading(true)
       try {
         const url = `/api/movies/detail?id=${id}${userId ? `&userId=${userId}` : ''}`
         const res = await fetch(url)
         const data = await res.json()
-        if (data.movie) {
+
+        if (data.movie && !initialMovie) {
           setMovie(data.movie)
-          setRecommendations(data.recommendations || [])
-          setChannelVideoCount(data.channelVideoCount || 0)
-          if (data.userState) {
-            setUserState(data.userState)
-            setSubscribed(!!data.userState.subscribed)
-          }
 
           // Check bookmark
           const savedBookmark = localStorage.getItem(`pn_bookmark_${id}`)
@@ -101,6 +128,17 @@ export default function MovieWatchClient({ id, initialMovie }: MovieWatchClientP
             }).catch(() => {})
           }
         }
+
+        if (data.recommendations) {
+          setRecommendations(data.recommendations)
+        }
+        if (data.channelVideoCount !== undefined) {
+          setChannelVideoCount(data.channelVideoCount)
+        }
+        if (data.userState) {
+          setUserState(data.userState)
+          setSubscribed(!!data.userState.subscribed)
+        }
       } catch (e) {
         console.error(e)
       } finally {
@@ -108,7 +146,7 @@ export default function MovieWatchClient({ id, initialMovie }: MovieWatchClientP
       }
     }
     load()
-  }, [id, userId])
+  }, [id, userId, initialMovie])
 
   // Load channel videos for autoplay next
   useEffect(() => {
@@ -370,10 +408,11 @@ export default function MovieWatchClient({ id, initialMovie }: MovieWatchClientP
             </h2>
             <div className="space-y-3" style={recommendationsListStyle}>
               {recommendations.map((m: any) => (
-                <button
+                <Link
                   key={m.id}
-                  onClick={() => router.push(`/movies/${m.id}`)}
-                  className="w-full flex gap-3 active:opacity-60 transition-opacity duration-150 text-left"
+                  href={`/movies/${m.id}`}
+                  className="w-full flex gap-3 active:opacity-60 transition-opacity duration-150 text-left block"
+                  style={{ textDecoration: 'none' }}
                 >
                   <img
                     src={m.thumbnail}
@@ -411,7 +450,7 @@ export default function MovieWatchClient({ id, initialMovie }: MovieWatchClientP
                       {m.watch_count || 0} views
                     </p>
                   </div>
-                </button>
+                </Link>
               ))}
             </div>
           </div>

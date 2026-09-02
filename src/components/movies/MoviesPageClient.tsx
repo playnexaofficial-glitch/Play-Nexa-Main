@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef }
   from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { Search } from 'lucide-react'
 import FeaturedBanner from
   '@/components/movies/FeaturedBanner'
@@ -336,14 +337,13 @@ export default function MoviesPageClient() {
         {/* Title + Search */}
         <div style={headerStyle}>
           <h1 style={h1Style}>{typeLabel}</h1>
-          <button
-            onClick={() =>
-              router.push('/movies/search')}
+          <Link
+            href="/movies/search"
             style={searchBtnStyle}
             className="active:opacity-60"
           >
             <Search size={18} color="#FFFFFF" />
-          </button>
+          </Link>
         </div>
 
         {/* All / Movie / Natok tabs */}
@@ -496,11 +496,11 @@ export default function MoviesPageClient() {
               className="hide-scroll">
               {feed.continueWatching.map(
                 (m: any) => (
-                <div
+                <Link
                   key={m.id}
-                  onClick={() =>
-                    router.push(`/movies/${m.id}`)}
-                  style={cwThumbStyle}
+                  href={`/movies/${m.id}`}
+                  style={{ ...cwThumbStyle, textDecoration: 'none', display: 'block' }}
+                  className="active:opacity-60"
                 >
                   <div style={cwImgWrapStyle}>
                     <img
@@ -529,7 +529,7 @@ export default function MoviesPageClient() {
                   <p style={cwTitleStyle}>
                     {m.title}
                   </p>
-                </div>
+                </Link>
               ))}
             </div>
           </section>

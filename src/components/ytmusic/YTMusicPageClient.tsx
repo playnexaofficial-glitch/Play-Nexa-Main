@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback }
   from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { Search, Bell } from 'lucide-react'
 import { useMusicContext, type MusicTrack } from '@/context/MusicContext'
 import dynamic from 'next/dynamic'
@@ -233,14 +234,13 @@ export default function YTMusicPageClient() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <button
-            onClick={() =>
-              router.push('/ytmusic/search')}
+          <Link
+            href="/ytmusic/search"
             className="w-10 h-10 rounded-full
               bg-[#1A1A2E] flex items-center
               justify-center active:opacity-60">
             <Search size={18} color="#FFFFFF"/>
-          </button>
+          </Link>
           <button
             className="w-10 h-10 rounded-full
               bg-[#1A1A2E] flex items-center
@@ -315,11 +315,10 @@ export default function YTMusicPageClient() {
               overflow-x-auto hide-scroll pb-2">
               {feed.topChannels.map(
                 (ch: any) => (
-                <button
+                <Link
                   key={ch.channel_id}
-                  onClick={() => router.push(
-                    `/ytmusic/channel/` +
-                    ch.channel_id)}
+                  href={`/ytmusic/channel/${ch.channel_id}`}
+                  style={{ textDecoration: 'none' }}
                   className="flex flex-col
                     items-center gap-2 flex-shrink-0
                     active:opacity-60">
@@ -342,7 +341,7 @@ export default function YTMusicPageClient() {
                     line-clamp-2">
                     {ch.channel_name}
                   </span>
-                </button>
+                </Link>
               ))}
             </div>
           </section>
@@ -416,13 +415,8 @@ export default function YTMusicPageClient() {
                   {row.channelName}
                 </h2>
               </div>
-              <button
-                onClick={() =>
-                  router.push(
-                    '/ytmusic/channel/' +
-                    row.channelId
-                  )
-                }
+              <Link
+                href={`/ytmusic/channel/${row.channelId}`}
                 className="active:opacity-60"
                 style={{
                   color: '#7C3AED',
@@ -433,10 +427,11 @@ export default function YTMusicPageClient() {
                   border: 'none',
                   cursor: 'pointer',
                   padding: '4px 0',
+                  textDecoration: 'none',
                 }}
               >
                 See all
-              </button>
+              </Link>
             </div>
             <div
               style={{

@@ -1,3 +1,5 @@
+import Link from 'next/link'
+
 export interface Movie {
   id: string; youtube_id: string; title: string
   thumbnail: string; channel_name: string
@@ -40,11 +42,14 @@ export default function MovieCard({
   const channelName = channelDisplay?.display_name || channelDisplay?.name || movie.channel_name || (movie as any).channel
 
   return (
-    <button
+    <Link
+      href={`/movies/${movie.id}`}
       onClick={handlePress}
-      className={`flex-shrink-0 text-left
+      className={`flex-shrink-0 text-left block
         active:opacity-60 transition-opacity duration-150
-        ${isPortrait ? 'w-36' : 'w-56'}`}>
+        ${isPortrait ? 'w-36' : 'w-56'}`}
+      style={{ textDecoration: 'none' }}
+    >
       <div
         className={`relative bg-[#1A1A2E] rounded-xl overflow-hidden mb-2 ${
           isPortrait ? 'w-36' : 'w-56'
@@ -95,6 +100,6 @@ export default function MovieCard({
         mt-0.5 truncate">
         {channelName}
       </p>
-    </button>
+    </Link>
   )
 }
