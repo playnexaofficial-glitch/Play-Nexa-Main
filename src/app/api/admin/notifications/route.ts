@@ -4,26 +4,14 @@ import { supabaseAdmin } from '@/lib/supabaseAdmin'
 
 export async function GET() {
   try {
-    let { data, error } = await supabaseAdmin
+    const { data, error } = await supabaseAdmin
       .from('notifications_log')
       .select('*')
       .order('sent_at', { ascending: false })
       .limit(30)
 
     if (error) {
-      const fallback = await supabaseAdmin
-        .from('notification_log')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(30)
-      
-      const formatted = (fallback.data || []).map((item: any) => ({
-        ...item,
-        body: item.body || item.message,
-        sent_at: item.sent_at || item.created_at,
-        sent_to: item.sent_to || item.target || 'all',
-      }))
-      return NextResponse.json({ data: formatted, notifications: formatted })
+      return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
     const formatted = (data || []).map((item: any) => ({
@@ -64,24 +52,18 @@ export async function POST(req: NextRequest) {
 
     const newNotification = {
       title: title.trim(),
-      message: msg.trim(),
       body: msg.trim(),
       sent_to: target || 'all',
-      target: target || 'all',
-      sent_at: new Date().toISOString(),
-      created_at: new Date().toISOString(),
       sent_count: count,
+      sent_at: new Date().toISOString(),
     }
 
-    let { error } = await supabaseAdmin
+    const { error } = await supabaseAdmin
       .from('notifications_log')
       .insert([newNotification])
 
     if (error) {
-      const fallback = await supabaseAdmin
-        .from('notification_log')
-        .insert([newNotification])
-      if (fallback.error) throw fallback.error
+      return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
     return NextResponse.json({
@@ -102,9 +84,13 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: 'id required' }, { status: 400 })
     }
 
-    let { error } = await supabaseAdmin.from('notifications_log').delete().eq('id', finalId)
+    const { error } = await supabaseAdmin
+      .from('notifications_log')
+      .delete()
+      .eq('id', finalId)
+
     if (error) {
-      await supabaseAdmin.from('notification_log').delete().eq('id', finalId)
+      return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
     return NextResponse.json({ success: true })
