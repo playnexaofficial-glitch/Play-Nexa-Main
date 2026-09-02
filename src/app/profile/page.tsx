@@ -79,7 +79,7 @@ export default function ProfilePage() {
       unsubscribe = onAuthStateChanged(auth, async (firebaseUser: any) => {
         setUser(firebaseUser)
         if (firebaseUser) {
-          await loadStats(firebaseUser.uid, firebaseUser.email)
+          await loadStats(firebaseUser.uid)
         } else {
           setIsLoading(false)
         }
@@ -90,16 +90,10 @@ export default function ProfilePage() {
     return () => unsubscribe?.()
   }, [])
 
-  const loadStats = async (uid: string, email?: string | null) => {
+  const loadStats = async (uid: string) => {
     try {
       const res = await fetch(`/api/profile/stats?userId=${uid}`)
       const data = await res.json()
-
-      // Check admin status also by email or uid
-      const isKnownAdmin =
-        email === 'groppro2026@gmail.com' ||
-        email === 'playnexa@admin.com' ||
-        email?.includes('admin')
 
       // Downloads from localStorage
       let downloads = 0
@@ -111,7 +105,7 @@ export default function ProfilePage() {
       setStats({
         ...data,
         downloads,
-        isAdmin: data.isAdmin || isKnownAdmin,
+        isAdmin: !!data.isAdmin,
       })
     } catch {
       // fallback

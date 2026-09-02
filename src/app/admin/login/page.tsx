@@ -38,7 +38,7 @@ export default function AdminLoginPage() {
         currentEmail.endsWith('@admin.com')
 
       if (isKnownAdmin) {
-        router.replace('/admin/dashboard')
+        router.replace('/admin/verify')
         return
       }
 
@@ -51,7 +51,7 @@ export default function AdminLoginPage() {
             .maybeSingle()
 
           if (data) {
-            router.replace('/admin/dashboard')
+            router.replace('/admin/verify')
             return
           }
         } catch {}
@@ -141,7 +141,7 @@ export default function AdminLoginPage() {
         return
       }
 
-      router.replace('/admin/dashboard')
+      router.replace('/admin/verify')
     } catch (err: any) {
       const msgs: Record<string, string> = {
         'auth/invalid-credential': 'Email বা password ভুল',

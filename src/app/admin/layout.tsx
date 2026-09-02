@@ -16,10 +16,10 @@ export default function AdminLayout({
   const [isAdmin, setIsAdmin] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
-  const isLoginPage = pathname === '/admin/login'
+  const isAuthPage = pathname === '/admin/login' || pathname === '/admin/verify'
 
   useEffect(() => {
-    if (isLoginPage) {
+    if (isAuthPage) {
       setChecking(false)
       return
     }
@@ -38,28 +38,42 @@ export default function AdminLayout({
       }
 
       const email = user.email ? user.email.trim().toLowerCase() : ''
-      const isKnownAdmin =
+      let isVerifiedAdmin =
         email === 'playnexa@admin.com' ||
         email === 'groppro2026@gmail.com' ||
         email.includes('admin@') ||
         email.endsWith('@admin.com')
 
-      if (isKnownAdmin) {
-        setIsAdmin(true)
+      if (!isVerifiedAdmin) {
+        // Server-side admin role verification
+        try {
+          const res = await fetch('/api/admin/verify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: user.uid, email }),
+          })
+          if (res.ok) {
+            const result = await res.json()
+            if (result.authorized) {
+              isVerifiedAdmin = true
+            }
+          }
+        } catch {}
+      }
+
+      if (!isVerifiedAdmin) {
+        setIsAdmin(false)
         setChecking(false)
+        router.replace('/')
         return
       }
 
-      // Server-side verification
+      // Check 2FA verification status
       try {
-        const res = await fetch('/api/admin/verify', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userId: user.uid, email }),
-        })
-        if (res.ok) {
-          const result = await res.json()
-          if (result.authorized) {
+        const res2fa = await fetch('/api/admin/verify-2fa')
+        if (res2fa.ok) {
+          const data2fa = await res2fa.json()
+          if (data2fa.verified) {
             setIsAdmin(true)
             setChecking(false)
             return
@@ -67,15 +81,16 @@ export default function AdminLayout({
         }
       } catch {}
 
+      // 2FA not verified -> redirect to 2FA verify page
       setIsAdmin(false)
       setChecking(false)
-      router.replace('/')
+      router.replace('/admin/verify')
     })
 
     return () => unsub()
-  }, [pathname, isLoginPage, router])
+  }, [pathname, isAuthPage, router])
 
-  if (isLoginPage) return <>{children}</>
+  if (isAuthPage) return <>{children}</>
 
   if (checking) {
     return (
