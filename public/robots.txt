@@ -1,0 +1,40 @@
+User-agent: *
+Allow: /
+Allow: /movies
+Allow: /movies/*
+Allow: /ytmusic
+Allow: /ytmusic/*
+Allow: /shorts
+Allow: /shorts/*
+Allow: /music
+Allow: /games
+Allow: /ott
+Allow: /platforms
+Allow: /platforms/*
+Allow: /download
+Allow: /search
+Allow: /help
+Allow: /security
+
+# Disallow admin and private/internal routes
+Disallow: /admin
+Disallow: /admin/*
+Disallow: /api/*
+Disallow: /auth/*
+Disallow: /profile/*
+Disallow: /library/*
+Disallow: /local/*
+Disallow: /history
+Disallow: /saved
+
+# Disallow tracking bot query params
+Disallow: /*?*userId=
+Disallow: /*?*token=
+Disallow: /*?*fbclid=
+
+# Crawl-delay for polite crawling
+Crawl-delay: 1
+
+# Host and Sitemap
+Host: https://play-nexa.vercel.app
+Sitemap: https://play-nexa.vercel.app/sitemap.xml

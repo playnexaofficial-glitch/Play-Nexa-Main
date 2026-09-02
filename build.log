@@ -1,0 +1,5 @@
+
+> nextjs_tailwind_shadcn_ts@0.2.0 build
+> ./node_modules/.bin/next build
+
+sh: 1: ./node_modules/.bin/next: not found
