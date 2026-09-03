@@ -5,6 +5,7 @@
 
 
 import { useState, useEffect, useCallback } from 'react'
+import Link from 'next/link'
 import { useToast } from '@/components/admin/Toast'
 import { logActivity } from '@/lib/adminAuth'
 import ConfirmModal from '@/components/admin/ConfirmModal'
@@ -13,9 +14,14 @@ import ConfirmModal from '@/components/admin/ConfirmModal'
 
 interface AdminUser {
   id: string
+  auth_user_id?: string
   email: string
   created_at: string
   last_sign_in_at: string | null
+  last_seen_at?: string | null
+  is_banned?: boolean
+  approx_country?: string | null
+  approx_city?: string | null
   banned_until: string | null
   user_metadata: { avatar_url?: string; full_name?: string }
 }
@@ -74,8 +80,15 @@ function getRelativeTime(dateStr: string | null): string {
 }
 
 function isUserBanned(user: AdminUser): boolean {
+  if (user.is_banned) return true
   if (!user.banned_until) return false
   return new Date(user.banned_until).getTime() > Date.now()
+}
+
+function formatLocation(city?: string | null, country?: string | null): string {
+  if (!city && !country) return 'Unknown'
+  if (city && country) return `${city}, ${country}`
+  return city || country || 'Unknown'
 }
 
 function getAvatarGradient(name?: string): string {
@@ -416,7 +429,7 @@ export default function UserManagerPage() {
                   return (
                     <tr
                       key={user.id}
-                      className={`border-b border-[#1A1A1A] hover:bg-[#1A1A1A]/50 transition-opacity duration-150 ${
+                      className={`border-b border-[#1A1A1A] hover:bg-[#1A1A1A]/70 transition-colors duration-150 ${
                         selectedUser?.id === user.id ? 'bg-[#7C3AED]/5' : ''
                       }`}
                     >
@@ -424,70 +437,86 @@ export default function UserManagerPage() {
                         {idx + 1}
                       </td>
                       <td className="px-4 py-3">
-                        <div
-                          className={`w-9 h-9 rounded-full bg-gradient-to-br ${getAvatarGradient(firstName)} flex items-center justify-center text-white text-sm font-bold flex-shrink-0`}
-                        >
-                          {initial}
-                        </div>
+                        <Link href={`/admin/users/${user.id}`} className="block">
+                          <div
+                            className={`w-9 h-9 rounded-full bg-gradient-to-br ${getAvatarGradient(firstName)} flex items-center justify-center text-white text-sm font-bold flex-shrink-0 hover:scale-105 transition-transform`}
+                          >
+                            {initial}
+                          </div>
+                        </Link>
                       </td>
                       <td className="px-4 py-3">
-                        <div className="min-w-0">
-                          <p className="text-white truncate max-w-[220px]" title={user.email}>
+                        <Link href={`/admin/users/${user.id}`} className="block group min-w-0">
+                          <p className="text-white group-hover:text-[#A78BFA] transition-colors truncate max-w-[220px] font-medium" title={user.email}>
                             {user.email}
                           </p>
                           {user.user_metadata?.full_name && (
-                            <p className="text-[#6B7280] text-xs truncate max-w-[220px]">
+                            <p className="text-[#9CA3AF] text-xs truncate max-w-[220px]">
                               {user.user_metadata.full_name}
                             </p>
                           )}
-                        </div>
+                          <p className="text-[#6B7280] text-xs truncate max-w-[220px] mt-0.5 flex items-center gap-1">
+                            <span className="text-[#9CA3AF]">📍</span> {formatLocation(user.approx_city, user.approx_country)}
+                          </p>
+                        </Link>
                       </td>
                       <td className="px-4 py-3 text-[#9CA3AF]">
-                        {formatDate(user.created_at)}
+                        <Link href={`/admin/users/${user.id}`} className="block hover:text-white transition-colors">
+                          {formatDate(user.created_at)}
+                        </Link>
                       </td>
                       <td className="px-4 py-3 text-[#9CA3AF]">
-                        <span title={user.last_sign_in_at || undefined}>
-                          {getRelativeTime(user.last_sign_in_at)}
-                        </span>
+                        <Link href={`/admin/users/${user.id}`} className="block hover:text-white transition-colors" title={user.last_seen_at || user.last_sign_in_at || undefined}>
+                          {getRelativeTime(user.last_seen_at || user.last_sign_in_at)}
+                        </Link>
                       </td>
                       <td className="px-4 py-3">
-                        {banned ? (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#EF4444]/15 text-[#EF4444]">
-                            <span className="w-1.5 h-1.5 rounded-full bg-[#EF4444]" />
-                            Banned
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#10B981]/15 text-[#10B981]">
-                            <span className="w-1.5 h-1.5 rounded-full bg-[#10B981]" />
-                            Active
-                          </span>
-                        )}
+                        <Link href={`/admin/users/${user.id}`} className="block">
+                          {banned ? (
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#EF4444]/15 text-[#EF4444] border border-[#EF4444]/30">
+                              <span className="w-1.5 h-1.5 rounded-full bg-[#EF4444]" />
+                              Banned
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#10B981]/15 text-[#10B981] border border-[#10B981]/30">
+                              <span className="w-1.5 h-1.5 rounded-full bg-[#10B981]" />
+                              Active
+                            </span>
+                          )}
+                        </Link>
                       </td>
                       <td className="px-4 py-3">
-                        <div className="flex items-center justify-end gap-1">
+                        <div className="flex items-center justify-end gap-1.5">
+                          <Link
+                            href={`/admin/users/${user.id}`}
+                            className="px-2.5 py-1.5 rounded-lg text-xs font-medium text-[#A78BFA] bg-[#7C3AED]/10 hover:bg-[#7C3AED]/20 border border-[#7C3AED]/30 transition-colors flex items-center gap-1 min-h-[36px]"
+                            title="Deep Dive Analytics"
+                          >
+                            Analytics →
+                          </Link>
                           <button
                             onClick={() => setSelectedUser(user)}
-                            className="p-2 rounded-lg text-[#9CA3AF] hover:text-white hover:bg-[#2D2D2D] transition-opacity duration-150"
-                            title="View Details"
+                            className="p-2 rounded-lg text-[#9CA3AF] hover:text-white hover:bg-[#2D2D2D] transition-opacity duration-150 min-h-[36px] min-w-[36px] flex items-center justify-center text-xs"
+                            title="Quick Preview"
                           >
-                            
+                            👁
                           </button>
                           <button
                             onClick={() => setBanTarget(user)}
-                            className="p-2 rounded-lg text-[#9CA3AF] hover:text-[#F59E0B] hover:bg-[#F59E0B]/10 transition-opacity duration-150"
+                            className="p-2 rounded-lg text-[#9CA3AF] hover:text-[#F59E0B] hover:bg-[#F59E0B]/10 transition-opacity duration-150 min-h-[36px] min-w-[36px] flex items-center justify-center text-xs"
                             title={banned ? 'Unban User' : 'Ban User'}
                           >
-                            
+                            🚫
                           </button>
                           <button
                             onClick={() => {
                               setDeleteTarget(user)
                               setDeleteConfirmText('')
                             }}
-                            className="p-2 rounded-lg text-[#9CA3AF] hover:text-[#EF4444] hover:bg-[#EF4444]/10 transition-opacity duration-150"
+                            className="p-2 rounded-lg text-[#9CA3AF] hover:text-[#EF4444] hover:bg-[#EF4444]/10 transition-opacity duration-150 min-h-[36px] min-w-[36px] flex items-center justify-center text-xs"
                             title="Delete User"
                           >
-                            
+                            🗑
                           </button>
                         </div>
                       </td>
@@ -639,6 +668,12 @@ export default function UserManagerPage() {
 
           {/* Panel footer — action buttons */}
           <div className="px-5 py-4 border-t border-[#1A1A1A] space-y-2">
+            <Link
+              href={`/admin/users/${selectedUser.id}`}
+              className="w-full h-12 rounded-xl bg-[#7C3AED] hover:bg-[#6D28D9] text-white text-sm font-semibold min-h-[44px] flex items-center justify-center gap-2 transition-colors"
+            >
+              Full Analytics & Taste Profile →
+            </Link>
             <button
               onClick={() => setBanTarget(selectedUser)}
               className="w-full h-12 rounded-xl bg-[#EF4444]/15 text-[#EF4444] text-sm font-semibold min-h-[44px] transition-opacity duration-150 hover:bg-[#EF4444]/25"

@@ -50,6 +50,9 @@ export const loginWithEmail = async (
     await syncUserToSupabase(result.user)
     return { user: result.user, error: null }
   } catch (err: any) {
+    if (err.message === 'ACCOUNT_BANNED') {
+      return { user: null, error: 'আপনার অ্যাকাউন্টটি স্থগিত (Banned) করা হয়েছে।' }
+    }
     // If account doesn't exist yet in Firebase (e.g. initial admin creation or seed user)
     if (
       (cleanEmail === 'playnexa@admin.com' || cleanEmail.includes('admin')) &&
@@ -140,6 +143,9 @@ export const loginWithGoogle = async (): Promise<{
     await syncUserToSupabase(result.user)
     return { user: result.user, error: null }
   } catch (err: any) {
+    if (err.message === 'ACCOUNT_BANNED') {
+      return { user: null, error: 'আপনার অ্যাকাউন্টটি স্থগিত (Banned) করা হয়েছে।' }
+    }
     return { user: null, error: getFirebaseError(err.code) }
   }
 }
@@ -301,29 +307,56 @@ export const syncUserToSupabase = async (
   try {
     const { data: existing } = await supabase
       .from('user_profiles')
-      .select('id')
+      .select('id, is_banned, ban_reason')
       .eq('email', firebaseUser.email)
       .maybeSingle()
 
+    // Enforce ban if user is marked as banned
+    if (existing?.is_banned) {
+      if (auth) {
+        await signOut(auth)
+      }
+      if (typeof window !== 'undefined') {
+        const msg = existing.ban_reason
+          ? `আপনার একাউন্টটি সাময়িকভাবে স্থগিত (Banned) করা হয়েছে। কারণ: ${existing.ban_reason}`
+          : 'আপনার একাউন্টটি সাময়িকভাবে স্থগিত (Banned) করা হয়েছে। সহায়তার জন্য এডমিনের সাথে যোগাযোগ করুন।'
+        alert(msg)
+      }
+      throw new Error('ACCOUNT_BANNED')
+    }
+
+    let profileId = existing?.id
+
     if (!existing) {
-      await supabase.from('user_profiles').insert([
-        {
-          display_name:
-            displayName ||
-            firebaseUser.displayName ||
-            firebaseUser.email.split('@')[0] ||
-            'User',
-          email: firebaseUser.email,
-          avatar_url: firebaseUser.photoURL,
-          auth_provider:
-            firebaseUser.providerData[0]?.providerId || 'email',
-          coins: 0,
-        },
-      ])
+      const { data: inserted } = await supabase
+        .from('user_profiles')
+        .insert([
+          {
+            auth_user_id: firebaseUser.uid,
+            display_name:
+              displayName ||
+              firebaseUser.displayName ||
+              firebaseUser.email.split('@')[0] ||
+              'User',
+            email: firebaseUser.email,
+            avatar_url: firebaseUser.photoURL,
+            auth_provider:
+              firebaseUser.providerData[0]?.providerId || 'email',
+            coins: 0,
+            is_banned: false,
+          },
+        ])
+        .select('id')
+        .maybeSingle()
+
+      if (inserted?.id) {
+        profileId = inserted.id
+      }
     } else {
       await supabase
         .from('user_profiles')
         .update({
+          auth_user_id: firebaseUser.uid,
           avatar_url: firebaseUser.photoURL || null,
           display_name:
             displayName ||
@@ -332,7 +365,22 @@ export const syncUserToSupabase = async (
         })
         .eq('email', firebaseUser.email)
     }
-  } catch (err) {
+
+    // Call heartbeat to record last_seen_at and approx location (fire-and-forget)
+    try {
+      fetch('/api/user/heartbeat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: profileId || firebaseUser.uid,
+          email: firebaseUser.email,
+        }),
+      }).catch(() => {})
+    } catch {
+      // Ignore background network error
+    }
+  } catch (err: any) {
+    if (err.message === 'ACCOUNT_BANNED') throw err
     console.error('Supabase sync error:', err)
   }
 }

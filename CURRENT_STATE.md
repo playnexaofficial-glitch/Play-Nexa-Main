@@ -165,3 +165,8 @@ NEXT_PUBLIC_APP_URL
 - NowPlaying.tsx
 - VinylDisc.tsx
 - EqualizerBars.tsx
+
+## Latest Updates
+- Added User Analytics Deep-Dive (`/admin/users/[id]`) with genre/mood taste breakdown, recent watch/listen timeline, direct in-app notification dispatcher, and account ban/unban moderation.
+- Added background user heartbeat tracking (`/api/user/heartbeat`) capturing approximate geolocation (country/city) and last seen timestamp.
+- Enforced banned account lockout in Firebase Auth and useAuth hook.

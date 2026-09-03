@@ -38,7 +38,7 @@ export async function GET(req: NextRequest) {
 
     let query = supabaseAdmin
       .from('user_profiles')
-      .select('id,auth_user_id,display_name,email,auth_provider,created_at')
+      .select('id,auth_user_id,display_name,email,auth_provider,created_at,is_banned,last_seen_at,approx_country,approx_city')
       .order('created_at', { ascending: false })
       .limit(100)
 
@@ -52,10 +52,15 @@ export async function GET(req: NextRequest) {
     // Map to normalized shape
     const formatted = (data || []).map((u: any) => ({
       id: u.id,
+      auth_user_id: u.auth_user_id,
       email: u.email || 'No email',
       created_at: u.created_at,
-      last_sign_in_at: u.created_at,
-      banned_until: null,
+      last_sign_in_at: u.last_seen_at || u.created_at,
+      last_seen_at: u.last_seen_at,
+      is_banned: !!u.is_banned,
+      approx_country: u.approx_country,
+      approx_city: u.approx_city,
+      banned_until: u.is_banned ? 'permanent' : null,
       user_metadata: {
         full_name: u.display_name,
         avatar_url: '',

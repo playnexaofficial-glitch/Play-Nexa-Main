@@ -7,7 +7,7 @@
 
 import { useState, useEffect } from 'react'
 import { User } from 'firebase/auth'
-import { onAuthChange } from '@/lib/firebaseAuth'
+import { onAuthChange, logout } from '@/lib/firebaseAuth'
 import { supabase } from '@/lib/supabase'
 
 // ── Types ──
@@ -19,6 +19,11 @@ export interface SupabaseProfile {
   avatar_url: string | null
   coins: number
   auth_provider: string
+  is_banned?: boolean
+  ban_reason?: string | null
+  last_seen_at?: string | null
+  approx_country?: string | null
+  approx_city?: string | null
 }
 
 interface AuthState {
@@ -69,7 +74,16 @@ export const useAuth = (): AuthState => {
         .eq('email', globalUser.email)
         .maybeSingle()
         .then(({ data }) => {
-          if (data) setSupabaseProfile(data as SupabaseProfile)
+          if (data) {
+            if (data.is_banned) {
+              logout()
+              if (typeof window !== 'undefined') {
+                alert('আপনার অ্যাকাউন্টটি স্থগিত (Banned) করা হয়েছে।')
+              }
+              return
+            }
+            setSupabaseProfile(data as SupabaseProfile)
+          }
         })
     } else {
       setSupabaseProfile(null)
