@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Gamepad2, Music, Film, User } from 'lucide-react';
+import { Home, Gamepad2, Download, User } from 'lucide-react';
 
 interface NavTab {
   href: string;
@@ -13,8 +13,7 @@ interface NavTab {
 const tabs: NavTab[] = [
   { href: '/', label: 'Home', icon: Home },
   { href: '/games', label: 'Game Hub', icon: Gamepad2 },
-  { href: '/ytmusic', label: 'YT Music', icon: Music },
-  { href: '/movies', label: 'Movies', icon: Film },
+  { href: '/download', label: 'Download', icon: Download },
   { href: '/profile', label: 'Me', icon: User },
 ];
 
@@ -22,9 +21,6 @@ export default function BottomNav() {
   const pathname = usePathname();
 
   const isActive = (href: string): boolean => {
-    if (href === '/ytmusic') {
-      return pathname === '/ytmusic' || pathname.startsWith('/ytmusic/');
-    }
     if (href === '/') {
       return pathname === '/';
     }

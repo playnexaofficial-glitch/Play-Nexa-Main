@@ -23,12 +23,8 @@ export default function HistoryPage() {
         setUserId(user?.uid || null)
         if (user?.uid) {
           try {
-            const [histRes, musicRes] = await Promise.all([
-              fetch(`/api/profile/history?userId=${user.uid}&type=movies`),
-              fetch(`/api/profile/history?userId=${user.uid}&type=music`),
-            ])
+            const histRes = await fetch(`/api/profile/history?userId=${user.uid}&type=movies`)
             const histData = await histRes.json()
-            const musicData = await musicRes.json()
 
             const movieItems = (histData.items || []).map((item: any) => ({
               id: item.id,
@@ -40,22 +36,12 @@ export default function HistoryPage() {
               youtubeId: item.youtube_id,
             }))
 
-            const musicItems = (musicData.items || []).map((item: any) => ({
-              id: item.id,
-              title: item.title,
-              thumbnail: item.thumbnail,
-              subtitle: item.channel_name || '',
-              timestamp: item.played_at,
-              type: 'music',
-              youtubeId: item.youtube_id,
-            }))
-
-            const all = [...movieItems, ...musicItems].sort(
-              (a, b) =>
+            movieItems.sort(
+              (a: any, b: any) =>
                 new Date(b.timestamp).getTime() -
                 new Date(a.timestamp).getTime()
             )
-            setHistory(all)
+            setHistory(movieItems)
           } catch {}
           setIsLoading(false)
         } else {
@@ -66,15 +52,15 @@ export default function HistoryPage() {
     init()
   }, [])
 
-  const deleteItem = async (itemId: string, type: 'movie' | 'music') => {
+  const deleteItem = async (itemId: string) => {
     if (!userId) return
     try {
       await fetch('/api/profile/history', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, itemId, type }),
+        body: JSON.stringify({ userId, itemId, type: 'movie' }),
       })
-      setHistory((prev) => prev.filter((h: any) => !(h.id === itemId && h.type === type)))
+      setHistory((prev) => prev.filter((h: any) => h.id !== itemId))
     } catch {}
   }
 
@@ -136,56 +122,50 @@ export default function HistoryPage() {
           <Clock size={40} color="#4B5563" className="mb-3" />
           <p className="text-white font-semibold mb-1">No history yet</p>
           <p className="text-[#9CA3AF] text-sm text-center">
-            Content you watch or listen to will appear here
+            Content you watch will appear here
           </p>
         </div>
       ) : (
         <div className="px-4 pt-4 space-y-3" style={{ contentVisibility: 'auto' }}>
-          {history.map((item: any) => {
-            const isMovie = item.type === 'movie'
-            return (
-              <div key={`${item.type}-${item.id}`} className="flex gap-3 items-start">
+          {history.map((item: any) => (
+            <div key={item.id} className="flex gap-3 items-start">
+              <button
+                onClick={() => router.push(`/movies/${item.id}`)}
+                className="flex-shrink-0 active:opacity-60 transition-opacity duration-150"
+              >
+                <img
+                  src={item.thumbnail}
+                  alt={item.title}
+                  loading="lazy"
+                  className="w-32 h-20 rounded-xl object-cover bg-[#1A1A2E]"
+                />
+              </button>
+              <div className="flex-1 min-w-0 pt-0.5">
                 <button
-                  onClick={() => router.push(isMovie ? `/movies/${item.id}` : `/ytmusic/player/${item.id}`)}
-                  className="flex-shrink-0 active:opacity-60 transition-opacity duration-150"
+                  onClick={() => router.push(`/movies/${item.id}`)}
+                  className="text-left w-full active:opacity-60 transition-opacity duration-150"
                 >
-                  <img
-                    src={item.thumbnail}
-                    alt={item.title}
-                    loading="lazy"
-                    className={`w-32 h-20 rounded-xl object-cover bg-[#1A1A2E] ${!isMovie ? 'aspect-square !h-20 !w-20' : ''}`}
-                  />
-                </button>
-                <div className="flex-1 min-w-0 pt-0.5">
-                  <button
-                    onClick={() => router.push(isMovie ? `/movies/${item.id}` : `/ytmusic/player/${item.id}`)}
-                    className="text-left w-full active:opacity-60 transition-opacity duration-150"
-                  >
-                    <p className="text-white text-sm font-medium line-clamp-2 leading-tight mb-1">
-                      {item.title}
-                    </p>
-                    <p className="text-[#9CA3AF] text-xs truncate">
-                      {item.subtitle}
-                    </p>
-                    <div className="flex items-center gap-1.5 mt-1">
-                      <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ${isMovie ? 'bg-red-500/10 text-red-500' : 'bg-blue-500/10 text-blue-500'}`}>
-                        {item.type}
-                      </span>
-                      <span className="text-[#6B7280] text-[10px]">
-                        {timeAgo(item.timestamp)}
-                      </span>
-                    </div>
-                  </button>
-                </div>
-                <button
-                  onClick={() => deleteItem(item.id, item.type)}
-                  className="w-8 h-8 flex items-center justify-center active:opacity-60 transition-opacity duration-150 flex-shrink-0 mt-0.5"
-                >
-                  <Trash2 size={15} color="#6B7280" />
+                  <p className="text-white text-sm font-medium line-clamp-2 leading-tight mb-1">
+                    {item.title}
+                  </p>
+                  <p className="text-[#9CA3AF] text-xs truncate">
+                    {item.subtitle}
+                  </p>
+                  <div className="flex items-center gap-1.5 mt-1">
+                    <span className="text-[#6B7280] text-[10px]">
+                      {timeAgo(item.timestamp)}
+                    </span>
+                  </div>
                 </button>
               </div>
-            )
-          })}
+              <button
+                onClick={() => deleteItem(item.id)}
+                className="w-8 h-8 flex items-center justify-center active:opacity-60 transition-opacity duration-150 flex-shrink-0 mt-0.5"
+              >
+                <Trash2 size={15} color="#6B7280" />
+              </button>
+            </div>
+          ))}
         </div>
       )}
     </div>
