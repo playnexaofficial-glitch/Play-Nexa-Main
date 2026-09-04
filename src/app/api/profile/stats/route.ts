@@ -20,7 +20,6 @@ export async function GET(req: NextRequest) {
       { count: saved },
       { count: played },
       { count: movieLikes },
-      { count: musicLikes },
       { data: adminData },
     ] = await Promise.all([
       supabaseAdmin
@@ -36,10 +35,6 @@ export async function GET(req: NextRequest) {
         .select('*', { count: 'exact', head: true })
         .eq('user_id', userId),
       supabaseAdmin
-        .from('music_likes')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', userId),
-      supabaseAdmin
         .from('admin_users')
         .select('role')
         .eq('user_id', userId)
@@ -49,7 +44,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({
       saved: saved ?? 0,
       played: played ?? 0,
-      liked: (movieLikes ?? 0) + (musicLikes ?? 0),
+      liked: movieLikes ?? 0,
       isAdmin: !!adminData,
     })
   } catch (err: any) {

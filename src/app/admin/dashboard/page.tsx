@@ -1,10 +1,10 @@
 'use client';
 import { useEffect, useState, useCallback } from 'react'
-import { Film, Music, Users, Tv, Gamepad2, MessageCircle, RefreshCw } from 'lucide-react'
+import { Film, Clapperboard, Users, Tv, Gamepad2, MessageCircle, RefreshCw } from 'lucide-react'
 
 interface Stats {
   movies: number
-  music: number
+  natok: number
   users: number
   channels: number
   games: number
@@ -13,7 +13,7 @@ interface Stats {
 
 const CARDS = [
   { key: 'movies', label: 'Total Movies', Icon: Film, color: '#7C3AED' },
-  { key: 'music', label: 'Music Tracks', Icon: Music, color: '#06B6D4' },
+  { key: 'natok', label: 'Natok', Icon: Clapperboard, color: '#06B6D4' },
   { key: 'users', label: 'Total Users', Icon: Users, color: '#22C55E' },
   { key: 'channels', label: 'YT Channels', Icon: Tv, color: '#F59E0B' },
   { key: 'games', label: 'Games', Icon: Gamepad2, color: '#EC4899' },
@@ -23,7 +23,7 @@ const CARDS = [
 export default function DashboardPage() {
   const [stats, setStats] = useState<Stats>({
     movies: 0,
-    music: 0,
+    natok: 0,
     users: 0,
     channels: 0,
     games: 0,
@@ -140,7 +140,7 @@ export default function DashboardPage() {
       <div className="mt-8 bg-red-900/10 border border-red-800/30 rounded-2xl p-5">
         <p className="text-red-400 font-semibold text-sm mb-1">Danger Zone</p>
         <p className="text-[#9CA3AF] text-xs mb-4">
-          Clear all movies and music tracks. This cannot be undone.
+          Clear all movies and natok. This cannot be undone.
         </p>
         <button
           onClick={handleClearContent}
@@ -155,7 +155,7 @@ export default function DashboardPage() {
             ? 'Clearing...'
             : clearConfirm
             ? 'Confirm — Delete Everything'
-            : 'Clear All Movies & Music'}
+            : 'Clear All Movies & Natok'}
         </button>
         {clearConfirm && (
           <button

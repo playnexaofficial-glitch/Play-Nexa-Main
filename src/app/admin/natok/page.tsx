@@ -1,8 +1,8 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react'
-import { Music as MusicIcon, Search, Trash2, Eye, EyeOff, ExternalLink, RefreshCw } from 'lucide-react'
+import { Clapperboard, Search, Trash2, Eye, EyeOff, ExternalLink, RefreshCw } from 'lucide-react'
 
-interface Track {
+interface NatokItem {
   id: string
   youtube_id: string
   title: string
@@ -11,33 +11,34 @@ interface Track {
   channel_id: string
   is_hidden: boolean
   created_at: string
+  content_type?: string
 }
 
-export default function MusicPage() {
-  const [tracks, setTracks] = useState<Track[]>([])
+export default function NatokPage() {
+  const [items, setItems] = useState<NatokItem[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [toast, setToast] = useState('')
-  const [deleteTarget, setDeleteTarget] = useState<Track | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<NatokItem | null>(null)
 
   const showToast = (msg: string) => {
     setToast(msg)
     setTimeout(() => setToast(''), 3000)
   }
 
-  const loadTracks = useCallback(async () => {
+  const loadNatok = useCallback(async () => {
     setLoading(true)
     try {
       const q = search.trim() ? `?search=${encodeURIComponent(search.trim())}` : ''
-      const res = await fetch(`/api/admin/music${q}`)
+      const res = await fetch(`/api/admin/natok${q}`)
       const json = await res.json()
       if (json.error) {
         showToast('Error: ' + json.error)
       } else {
-        setTracks(json.data || [])
+        setItems(json.data || [])
       }
     } catch (err: any) {
-      showToast('Error: ' + (err?.message || 'Failed to load music tracks'))
+      showToast('Error: ' + (err?.message || 'Failed to load Natok items'))
     } finally {
       setLoading(false)
     }
@@ -45,23 +46,23 @@ export default function MusicPage() {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      loadTracks()
+      loadNatok()
     }, 300)
     return () => clearTimeout(timer)
-  }, [loadTracks])
+  }, [loadNatok])
 
-  const toggleHide = async (track: Track) => {
+  const toggleHide = async (item: NatokItem) => {
     try {
-      const nextHidden = !track.is_hidden
-      const res = await fetch('/api/admin/music', {
+      const nextHidden = !item.is_hidden
+      const res = await fetch('/api/admin/natok', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: track.id, is_hidden: nextHidden }),
+        body: JSON.stringify({ id: item.id, is_hidden: nextHidden }),
       })
       const data = await res.json()
       if (data.success) {
-        setTracks((prev) =>
-          prev.map((t) => (t.id === track.id ? { ...t, is_hidden: nextHidden } : t))
+        setItems((prev) =>
+          prev.map((t) => (t.id === item.id ? { ...t, is_hidden: nextHidden } : t))
         )
         showToast(nextHidden ? 'Hidden from app' : 'Visible in app')
       } else {
@@ -75,15 +76,15 @@ export default function MusicPage() {
   const handleDelete = async () => {
     if (!deleteTarget) return
     try {
-      const res = await fetch(`/api/admin/music?id=${deleteTarget.id}`, {
+      const res = await fetch(`/api/admin/natok?id=${deleteTarget.id}`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: deleteTarget.id }),
       })
       const data = await res.json()
       if (data.success) {
-        setTracks((prev) => prev.filter((t) => t.id !== deleteTarget.id))
-        showToast('Track deleted')
+        setItems((prev) => prev.filter((t) => t.id !== deleteTarget.id))
+        showToast('Natok item deleted')
       } else {
         showToast('Error: ' + (data.error || 'Delete failed'))
       }
@@ -99,18 +100,18 @@ export default function MusicPage() {
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-cyan-900/20 flex items-center justify-center text-cyan-400">
-            <MusicIcon size={22} />
+            <Clapperboard size={22} />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-white">YT Music Tracks</h1>
+            <h1 className="text-xl font-bold text-white">Natok Hub</h1>
             <p className="text-xs text-[#9CA3AF]">
-              {tracks.length} tracks loaded • Real-time DB
+              {items.length} natok loaded • Real-time DB
             </p>
           </div>
         </div>
 
         <button
-          onClick={loadTracks}
+          onClick={loadNatok}
           className="px-3 py-2.5 bg-[#141420] border border-[#2D2D44] rounded-xl text-white text-xs font-semibold min-h-[44px] active:opacity-60 hover:bg-[#1A1A2E] flex items-center gap-2"
         >
           <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
@@ -128,24 +129,24 @@ export default function MusicPage() {
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search tracks by title..."
+          placeholder="Search natok by title..."
           className="w-full h-12 bg-[#0F0F1A] border border-[#1A1A2E] rounded-xl pl-10 pr-4 text-white text-sm outline-none focus:border-cyan-500 placeholder-[#4B5563]"
         />
       </div>
 
-      {loading && tracks.length === 0 ? (
+      {loading && items.length === 0 ? (
         <div className="flex justify-center py-16">
           <div className="w-8 h-8 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin" />
         </div>
-      ) : tracks.length === 0 ? (
+      ) : items.length === 0 ? (
         <div className="text-center py-16 bg-[#0F0F1A] border border-[#1A1A2E] rounded-2xl">
           <p className="text-[#6B7280] text-sm">
-            {search ? 'No tracks match your search.' : 'No music tracks in database yet. Use Auto-Scan or Quick Add!'}
+            {search ? 'No natok match your search.' : 'No natok in database yet. Use Auto-Scan or Quick Add!'}
           </p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {tracks.map((t) => (
+          {items.map((t) => (
             <div
               key={t.id}
               className={`bg-[#0F0F1A] border rounded-2xl overflow-hidden flex flex-col transition-all duration-150 ${
@@ -162,7 +163,7 @@ export default function MusicPage() {
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-[#4B5563]">
-                    <MusicIcon size={32} />
+                    <Clapperboard size={32} />
                   </div>
                 )}
                 {t.is_hidden && (
@@ -192,7 +193,7 @@ export default function MusicPage() {
                     rel="noreferrer"
                     className="text-xs text-cyan-400 hover:underline flex items-center gap-1 min-h-[36px]"
                   >
-                    Listen <ExternalLink size={12} />
+                    Watch <ExternalLink size={12} />
                   </a>
 
                   <div className="flex gap-1.5">
@@ -231,7 +232,7 @@ export default function MusicPage() {
             onClick={() => setDeleteTarget(null)}
           />
           <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[81] bg-[#0F0F1A] border border-[#2D2D44] rounded-2xl p-6 max-w-sm w-[90%] shadow-2xl">
-            <h3 className="text-white font-bold text-base mb-2">Delete Track?</h3>
+            <h3 className="text-white font-bold text-base mb-2">Delete Natok?</h3>
             <p className="text-[#9CA3AF] text-xs mb-5 line-clamp-2">
               Are you sure you want to remove &quot;{deleteTarget.title}&quot; from Play Nexa?
             </p>

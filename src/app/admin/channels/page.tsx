@@ -8,7 +8,7 @@ interface Channel {
   channel_id: string
   channel_name: string
   channel_avatar: string | null
-  channel_type: 'movies' | 'music' | 'mixed'
+  channel_type: 'movies' | 'natok' | 'mixed'
   is_active: boolean
 }
 
@@ -17,7 +17,7 @@ interface ScanState {
   totalOnChannel: number
   imported: number
   movieCount: number
-  musicCount: number
+  natokCount: number
   remaining: number
   progress: number
   batchNumber: number
@@ -29,7 +29,7 @@ export default function ChannelsPage() {
   const [loading, setLoading] = useState(true)
   const [showAddModal, setShowAddModal] = useState(false)
   const [urlInput, setUrlInput] = useState('')
-  const [channelType, setChannelType] = useState<'movies' | 'music' | 'mixed'>('movies')
+  const [channelType, setChannelType] = useState<'movies' | 'natok' | 'mixed'>('movies')
   const [isFetching, setIsFetching] = useState(false)
   const [fetchedInfo, setFetchedInfo] = useState<any>(null)
   const [fetchError, setFetchError] = useState('')
@@ -43,7 +43,7 @@ export default function ChannelsPage() {
   const [showQuickAdd, setShowQuickAdd] = useState(false)
   const [quickUrl, setQuickUrl] = useState('')
   const [quickPreview, setQuickPreview] = useState<any>(null)
-  const [quickCategory, setQuickCategory] = useState<'movie' | 'music'>('movie')
+  const [quickCategory, setQuickCategory] = useState<'movie' | 'natok'>('movie')
   const [quickFetching, setQuickFetching] = useState(false)
   const [quickLoading, setQuickLoading] = useState(false)
 
@@ -53,7 +53,7 @@ export default function ChannelsPage() {
   const [browserData, setBrowserData] = useState<any>(null)
   const [browserLoading, setBrowserLoading] = useState(false)
   const [selectedVideos, setSelectedVideos] = useState<Set<string>>(new Set())
-  const [browserCategory, setBrowserCategory] = useState<'movie' | 'music'>('movie')
+  const [browserCategory, setBrowserCategory] = useState<'movie' | 'natok'>('movie')
   const [importing, setImporting] = useState(false)
   const [importProgress, setImportProgress] = useState({ done: 0, total: 0 })
   const [browserSearch, setBrowserSearch] = useState('')
@@ -133,7 +133,7 @@ export default function ChannelsPage() {
               ),
               progress: 0,
               movieCount: 0,
-              musicCount: 0,
+              natokCount: 0,
               batchNumber: ch.scan_batch || 0,
             }
           }
@@ -195,7 +195,7 @@ export default function ChannelsPage() {
           delete fullImportPollRefs.current[channelId]
           if (data.status === 'completed') {
             showToast(
-              `Import done! ${data.moviesAdded || 0} movies + ${data.musicAdded || 0} music`
+              `Import done! ${data.moviesAdded || 0} movies + ${data.musicAdded || data.natokAdded || 0} natok`
             )
             loadChannels()
           }
@@ -348,7 +348,7 @@ export default function ChannelsPage() {
       if (data.error) showToast('Error: ' + data.error)
       else {
         setQuickPreview(data)
-        setQuickCategory(data.aiSuggestion === 'music' ? 'music' : 'movie')
+        setQuickCategory(data.aiSuggestion === 'natok' ? 'natok' : 'movie')
       }
     } catch (err: any) {
       showToast('Error: ' + (err?.message || 'Failed to fetch video'))
@@ -504,7 +504,7 @@ export default function ChannelsPage() {
       ) : channels.length === 0 ? (
         <div className="text-center py-16 bg-[#0F0F1A] border border-[#1A1A2E] rounded-2xl">
           <p className="text-[#6B7280] text-sm">
-            No channels yet. Add your first YouTube channel to import movies & music.
+            No channels yet. Add your first YouTube channel to import movies & natok.
           </p>
         </div>
       ) : (
@@ -543,7 +543,7 @@ export default function ChannelsPage() {
                         className={`text-xs px-2 py-0.5 rounded-full ${
                           ch.channel_type === 'movies'
                             ? 'bg-purple-900/30 text-purple-400 border border-purple-800/30'
-                            : ch.channel_type === 'music'
+                            : ch.channel_type === 'natok'
                             ? 'bg-cyan-900/30 text-cyan-400 border border-cyan-800/30'
                             : 'bg-orange-900/30 text-orange-400 border border-orange-800/30'
                         }`}
@@ -685,7 +685,7 @@ export default function ChannelsPage() {
                     </div>
                     <div className="flex justify-between text-xs text-[#9CA3AF]">
                       <span> {fi.moviesAdded || 0} movies</span>
-                      <span> {fi.musicAdded || 0} music</span>
+                      <span> {fi.musicAdded || fi.natokAdded || 0} natok</span>
                       <span>⏭ {fi.skipped || 0} skipped</span>
                     </div>
                   </div>
@@ -698,7 +698,7 @@ export default function ChannelsPage() {
                     </p>
                     <p className="text-[#9CA3AF] text-xs mt-1">
                        {fi.moviesAdded || 0} movies •
-                       {fi.musicAdded || 0} music •
+                       {fi.musicAdded || fi.natokAdded || 0} natok •
                       ⏭ {fi.skipped || 0} skipped •
                        {fi.duplicates || 0} duplicates
                     </p>
@@ -785,7 +785,7 @@ export default function ChannelsPage() {
                 Channel Type
               </label>
               <div className="flex gap-2">
-                {(['movies', 'music', 'mixed'] as const).map((t) => (
+                {(['movies', 'natok', 'mixed'] as const).map((t) => (
                   <button
                     key={t}
                     onClick={() => setChannelType(t)}
@@ -802,9 +802,9 @@ export default function ChannelsPage() {
               <p className="text-[#6B7280] text-xs mt-2">
                 {channelType === 'movies'
                   ? 'Movies → Movie Hub'
-                  : channelType === 'music'
-                  ? 'Music → YT Music'
-                  : 'Both → Movie Hub + YT Music'}
+                  : channelType === 'natok'
+                  ? 'Natok → Natok Hub'
+                  : 'Both → Movie Hub + Natok Hub'}
               </p>
             </div>
 
@@ -879,13 +879,13 @@ export default function ChannelsPage() {
                       {quickPreview.channelName}
                     </p>
                     <p className="text-[#7C3AED] text-xs mt-0.5">
-                      AI: {quickPreview.aiSuggestion === 'music' ? 'Music' : 'Movie'}
+                      AI: {quickPreview.aiSuggestion === 'natok' ? 'Natok' : 'Movie'}
                     </p>
                   </div>
                 </div>
 
                 <div className="flex gap-2 mb-4">
-                  {(['movie', 'music'] as const).map((t) => (
+                  {(['movie', 'natok'] as const).map((t) => (
                     <button
                       key={t}
                       onClick={() => setQuickCategory(t)}
@@ -895,7 +895,7 @@ export default function ChannelsPage() {
                           : 'bg-[#141420] text-[#9CA3AF] hover:text-white'
                       }`}
                     >
-                      {t === 'movie' ? 'Movie Hub' : 'YT Music'}
+                      {t === 'movie' ? 'Movie Hub' : 'Natok Hub'}
                     </button>
                   ))}
                 </div>
@@ -907,7 +907,7 @@ export default function ChannelsPage() {
                 >
                   {quickLoading
                     ? 'Adding...'
-                    : `Add as ${quickCategory === 'movie' ? 'Movie' : 'Music'}`}
+                    : `Add as ${quickCategory === 'movie' ? 'Movie' : 'Natok'}`}
                 </button>
               </>
             )}
@@ -1103,7 +1103,7 @@ export default function ChannelsPage() {
             {browserData && selectedVideos.size > 0 && (
               <div className="px-4 py-4 border-t border-[#1A1A2E] flex-shrink-0">
                 <div className="flex gap-2 mb-3">
-                  {(['movie', 'music'] as const).map((t) => (
+                  {(['movie', 'natok'] as const).map((t) => (
                     <button
                       key={t}
                       onClick={() => setBrowserCategory(t)}
@@ -1113,7 +1113,7 @@ export default function ChannelsPage() {
                           : 'bg-[#141420] text-[#9CA3AF] hover:text-white'
                       }`}
                     >
-                      {t === 'movie' ? ' Movie' : ' Music'}
+                      {t === 'movie' ? ' Movie' : ' Natok'}
                     </button>
                   ))}
                 </div>
@@ -1148,7 +1148,7 @@ export default function ChannelsPage() {
                   {importing
                     ? `Importing ${importProgress.done}/${importProgress.total}...`
                     : `Import ${selectedVideos.size} as ${
-                        browserCategory === 'movie' ? ' Movies' : ' Music'
+                        browserCategory === 'movie' ? ' Movies' : ' Natok'
                       }`}
                 </button>
               </div>

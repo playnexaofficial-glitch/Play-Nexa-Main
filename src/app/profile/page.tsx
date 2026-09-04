@@ -17,7 +17,7 @@ import {
   Download,
   Clock,
   Heart,
-  ListMusic,
+  Folder,
   Gamepad2,
   Edit2
 } from 'lucide-react'
@@ -140,7 +140,7 @@ export default function ProfilePage() {
   const handleShare = async () => {
     const shareData = {
       title: 'Play Nexa',
-      text: 'Watch movies and listen to music free on Play Nexa',
+      text: 'Watch movies, bangla natok, and play games on Play Nexa',
       url: 'https://playnexa.com',
     }
     try {
@@ -168,13 +168,6 @@ export default function ProfilePage() {
       description: 'Saved 5 or more items',
       unlocked: stats.saved >= 5,
       icon: Heart,
-    },
-    {
-      id: 'music_lover',
-      label: 'Music Lover',
-      description: 'Liked 5 or more songs',
-      unlocked: stats.liked >= 5,
-      icon: ListMusic,
     },
     {
       id: 'binge_watcher',
@@ -398,7 +391,7 @@ export default function ProfilePage() {
               count: stats.saved,
             },
             {
-              Icon: ListMusic,
+              Icon: Folder,
               label: 'My Playlists',
               path: '/profile/playlists',
               count: null,
