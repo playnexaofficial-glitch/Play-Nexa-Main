@@ -1,8 +1,10 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Search, Bell, RefreshCw } from 'lucide-react'
+import FeaturedBanner from '@/components/movies/FeaturedBanner'
 import MovieCard, { Movie } from '@/components/movies/MovieCard'
 import SkeletonCard from '@/components/ui/SkeletonCard'
 
@@ -10,8 +12,8 @@ function interleaveMovies(trending: Movie[], newReleases: Movie[]): Movie[] {
   const result: Movie[] = []
   const seen = new Set<string>()
 
-  const tList = [...trending].sort(() => Math.random() - 0.5)
-  const nList = [...newReleases].sort(() => Math.random() - 0.5)
+  const tList = [...trending]
+  const nList = [...newReleases]
 
   const maxLen = Math.max(tList.length, nList.length)
   for (let i = 0; i < maxLen; i++) {
@@ -34,13 +36,45 @@ function interleaveMovies(trending: Movie[], newReleases: Movie[]): Movie[] {
   return result
 }
 
+const sectionTitleStyle: React.CSSProperties = {
+  color: '#FFFFFF',
+  fontSize: 16,
+  fontWeight: 700,
+  fontFamily: 'system-ui, sans-serif',
+  margin: '0 0 12px 0',
+}
+
+const rowScrollStyle: React.CSSProperties = {
+  display: 'flex',
+  gap: 12,
+  overflowX: 'auto',
+  paddingBottom: 8,
+  contentVisibility: 'auto',
+  containIntrinsicSize: '0 200px',
+}
+
 export default function HomeFeedClient() {
-  const [feedItems, setFeedItems] = useState<Movie[]>([])
+  const router = useRouter()
+  const [userId, setUserId] = useState<string | null>(null)
   const [rawTrending, setRawTrending] = useState<Movie[]>([])
   const [rawNewReleases, setRawNewReleases] = useState<Movie[]>([])
+  const [rawRecommended, setRawRecommended] = useState<Movie[]>([])
   const [contentType, setContentType] = useState<'all' | 'movie' | 'natok'>('all')
   const [isLoading, setIsLoading] = useState(true)
   const [isRefreshing, setIsRefreshing] = useState(false)
+  const [bannerIndex, setBannerIndex] = useState(0)
+  const bannerRef = useRef<NodeJS.Timeout>(undefined)
+
+  // Get Firebase user
+  useEffect(() => {
+    import('@/lib/firebase').then(({ auth }) => {
+      const { onAuthStateChanged } = require('firebase/auth')
+      const unsub = onAuthStateChanged(auth, (user: any) => {
+        setUserId(user?.uid || null)
+      })
+      return () => unsub()
+    }).catch(() => {})
+  }, [])
 
   const fetchFeed = useCallback(async (isRefresh = false) => {
     if (isRefresh) {
@@ -63,10 +97,13 @@ export default function HomeFeedClient() {
 
       const trending: Movie[] = data.trending || []
       const newReleases: Movie[] = data.newReleases || []
+      const recommended: Movie[] = data.recommended && data.recommended.length > 0
+        ? data.recommended
+        : interleaveMovies(trending, newReleases)
 
       setRawTrending(trending)
       setRawNewReleases(newReleases)
-      setFeedItems(interleaveMovies(trending, newReleases))
+      setRawRecommended(recommended)
     } catch (err: any) {
       if (err.name === 'AbortError') {
         console.warn('Home feed timeout')
@@ -82,17 +119,63 @@ export default function HomeFeedClient() {
   }, [fetchFeed])
 
   const handleRefresh = () => {
-    if (rawTrending.length > 0 || rawNewReleases.length > 0) {
-      setFeedItems(interleaveMovies(rawTrending, rawNewReleases))
-    }
     fetchFeed(true)
   }
 
   // Client-side filtering by content_type
-  const filteredFeed = feedItems.filter((item: any) => {
-    if (contentType === 'all') return true
-    return item.content_type === contentType
-  })
+  const filterByType = (list: Movie[]) => {
+    if (contentType === 'all') return list
+    return list.filter((item: any) => item.content_type === contentType)
+  }
+
+  const trendingList = filterByType(rawTrending)
+  const newReleasesList = filterByType(rawNewReleases)
+  const recommendedList = filterByType(rawRecommended)
+
+  // Compute 3-5 top items for Featured Banner from combined trending + new releases
+  const combinedRaw = interleaveMovies(rawTrending, rawNewReleases)
+  const filteredCombined = filterByType(combinedRaw)
+  const featuredList = filteredCombined.slice(0, 5)
+
+  // Banner auto-rotate
+  useEffect(() => {
+    setBannerIndex(0)
+  }, [contentType])
+
+  useEffect(() => {
+    if (featuredList.length <= 1) return
+    bannerRef.current = setInterval(() => {
+      setBannerIndex((i) => (i + 1) % featuredList.length)
+    }, 5000)
+    return () => {
+      if (bannerRef.current) clearInterval(bannerRef.current)
+    }
+  }, [featuredList.length])
+
+  const handleSaveFromBanner = async (movieId: string) => {
+    if (!userId) {
+      router.push('/auth/login')
+      return
+    }
+    try {
+      await fetch('/api/movies/react', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'save',
+          userId,
+          movieId,
+          youtubeId: featuredList.find((m) => m.id === movieId)?.youtube_id || '',
+        }),
+      })
+    } catch {}
+  }
+
+  const hasContent =
+    featuredList.length > 0 ||
+    trendingList.length > 0 ||
+    newReleasesList.length > 0 ||
+    recommendedList.length > 0
 
   return (
     <div className="min-h-screen bg-[#0D0D0D] pb-24 text-white">
@@ -116,7 +199,7 @@ export default function HomeFeedClient() {
               <span className="truncate">Search movies, natok...</span>
             </Link>
 
-            {/* Notification Bell (placeholder for now) */}
+            {/* Notification Bell */}
             <button
               type="button"
               className="w-9 h-9 rounded-full bg-[#1A1A2E] border border-[#2D2D44] flex items-center justify-center text-[#9CA3AF] hover:text-white active:opacity-60 transition-colors flex-shrink-0"
@@ -164,20 +247,32 @@ export default function HomeFeedClient() {
         </div>
       </div>
 
-      {/* ── Main Feed Content ── */}
+      {/* ── Main Content ── */}
       {isLoading ? (
-        <div className="px-4 pt-4 space-y-6 max-w-2xl mx-auto">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="space-y-2">
-              <div className="w-full aspect-video bg-[#1A1A2E] rounded-xl" />
-              <div className="h-4 bg-[#1A1A2E] rounded w-3/4" />
-              <div className="h-3 bg-[#1A1A2E] rounded w-1/3" />
+        <div className="min-h-screen bg-[#0D0D0D] pb-24">
+          {/* Banner skeleton */}
+          <div className="mb-6">
+            <div className="relative w-full aspect-video bg-[#1A1A2E]" />
+          </div>
+          {/* Section row skeletons */}
+          <div className="px-4 space-y-8">
+            <div>
+              <div className="h-5 bg-[#1A1A2E] rounded-lg w-1/4 mb-3" />
+              <div className="flex gap-3 overflow-x-hidden">
+                <SkeletonCard variant="landscape" count={2} />
+              </div>
             </div>
-          ))}
+            <div>
+              <div className="h-5 bg-[#1A1A2E] rounded-lg w-1/4 mb-3" />
+              <div className="flex gap-3 overflow-x-hidden">
+                <SkeletonCard variant="landscape" count={2} />
+              </div>
+            </div>
+          </div>
         </div>
-      ) : filteredFeed.length === 0 ? (
+      ) : !hasContent ? (
         /* Empty State */
-        <div className="flex flex-col items-center justify-center py-24 px-4 text-center">
+        <div className="flex flex-col items-center justify-center py-20 px-4 text-center">
           <div className="w-16 h-16 rounded-2xl bg-[#1A1A2E] flex items-center justify-center mb-4 text-[#6B7280]">
             <Search size={28} />
           </div>
@@ -192,26 +287,87 @@ export default function HomeFeedClient() {
             Content added to the library will automatically show up in your feed
           </p>
           <button
-            onClick={() => handleRefresh()}
+            onClick={handleRefresh}
             className="mt-4 px-4 py-2 bg-[#1A1A2E] hover:bg-[#252538] border border-[#2D2D44] text-xs font-semibold text-white rounded-full active:opacity-60 transition-colors"
           >
             Try Refreshing
           </button>
         </div>
       ) : (
-        /* Vertical Single-Column Scrolling Feed */
-        <div className="px-4 pt-4 space-y-6 max-w-2xl mx-auto" style={{ contentVisibility: 'auto' }}>
-          {filteredFeed.map((movie) => (
-            <div key={movie.id} className="w-full">
-              {/* Full-width container wrapping MovieCard */}
-              <div className="[&>a]:!w-full [&>a>div]:!w-full">
-                <MovieCard
-                  movie={movie}
-                  variant="landscape"
-                />
-              </div>
+        <div className="space-y-8">
+          {/* ── Featured Banner ── */}
+          {featuredList.length > 0 && (
+            <div className="mb-6">
+              <FeaturedBanner
+                movies={featuredList as any}
+                currentIndex={bannerIndex}
+                onIndexChange={setBannerIndex}
+                onPlay={(id) => router.push(`/movies/${id}`)}
+                onSave={handleSaveFromBanner}
+              />
             </div>
-          ))}
+          )}
+
+          {/* ── Horizontal Scrolling Rows ── */}
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 32,
+              padding: '0 16px',
+            }}
+          >
+            {/* Trending Now */}
+            {trendingList.length > 0 && (
+              <section>
+                <h2 style={sectionTitleStyle}>Trending Now</h2>
+                <div style={rowScrollStyle} className="hide-scroll">
+                  {trendingList.map((m) => (
+                    <MovieCard
+                      key={m.id}
+                      movie={m}
+                      variant="landscape"
+                      onPress={() => router.push(`/movies/${m.id}`)}
+                    />
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* New Releases */}
+            {newReleasesList.length > 0 && (
+              <section>
+                <h2 style={sectionTitleStyle}>New Releases</h2>
+                <div style={rowScrollStyle} className="hide-scroll">
+                  {newReleasesList.map((m) => (
+                    <MovieCard
+                      key={m.id}
+                      movie={m}
+                      variant="landscape"
+                      onPress={() => router.push(`/movies/${m.id}`)}
+                    />
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* Recommended for You */}
+            {recommendedList.length > 0 && (
+              <section>
+                <h2 style={sectionTitleStyle}>Recommended for You</h2>
+                <div style={rowScrollStyle} className="hide-scroll">
+                  {recommendedList.map((m) => (
+                    <MovieCard
+                      key={m.id}
+                      movie={m}
+                      variant="landscape"
+                      onPress={() => router.push(`/movies/${m.id}`)}
+                    />
+                  ))}
+                </div>
+              </section>
+            )}
+          </div>
         </div>
       )}
 
