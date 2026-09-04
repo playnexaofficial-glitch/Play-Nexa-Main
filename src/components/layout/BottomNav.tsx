@@ -7,7 +7,7 @@ import { Home, Gamepad2, Download, User } from 'lucide-react';
 interface NavTab {
   href: string;
   label: string;
-  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  icon: React.ComponentType<{ className?: string; size?: number; strokeWidth?: number }>;
 }
 
 const tabs: NavTab[] = [
@@ -29,36 +29,49 @@ export default function BottomNav() {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-[9999] flex h-16 items-stretch border-t border-[#2D2D44] bg-[#0A0A0A]"
+      className="fixed bottom-0 left-0 right-0 z-[9999] border-t border-[#232338] bg-[#0D0D15]/95 backdrop-blur-md shadow-[0_-8px_24px_rgba(0,0,0,0.6)]"
       style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
       role="navigation"
       aria-label="Main navigation"
     >
-      {tabs.map((tab) => {
-        const active = isActive(tab.href);
-        const Icon = tab.icon;
+      <div className="mx-auto flex h-[68px] max-w-md items-center justify-around px-2">
+        {tabs.map((tab) => {
+          const active = isActive(tab.href);
+          const Icon = tab.icon;
 
-        return (
-          <Link
-            key={tab.href}
-            href={tab.href}
-            className={`flex min-w-[20%] flex-col items-center justify-center active:opacity-60 transition-opacity duration-100 ${
-              active ? 'text-pn-purple' : 'text-pn-muted'
-            }`}
-            aria-label={tab.label}
-            aria-current={active ? 'page' : undefined}
-          >
-            <Icon className="h-[22px] w-[22px]" aria-hidden="true" />
-            <span
-              className={`mt-1 text-[10px] leading-tight ${
-                active ? 'font-semibold' : 'font-normal'
+          return (
+            <Link
+              key={tab.href}
+              href={tab.href}
+              className={`group flex min-h-[48px] min-w-[64px] flex-col items-center justify-center rounded-xl py-1 px-3 transition-all duration-150 active:scale-95 ${
+                active ? 'text-[#7C3AED]' : 'text-[#8E8EA0] hover:text-[#D1D5DB]'
               }`}
+              aria-label={tab.label}
+              aria-current={active ? 'page' : undefined}
             >
-              {tab.label}
-            </span>
-          </Link>
-        );
-      })}
+              <div
+                className={`relative flex items-center justify-center rounded-full px-3 py-1 transition-all duration-150 ${
+                  active ? 'bg-[#7C3AED]/15' : 'bg-transparent'
+                }`}
+              >
+                <Icon
+                  size={20}
+                  strokeWidth={active ? 2.4 : 1.8}
+                  className="transition-transform duration-150"
+                />
+              </div>
+              <span
+                className={`mt-0.5 text-[11px] tracking-tight transition-colors duration-150 ${
+                  active ? 'font-bold text-[#7C3AED]' : 'font-medium text-[#8E8EA0]'
+                }`}
+              >
+                {tab.label}
+              </span>
+            </Link>
+          );
+        })}
+      </div>
     </nav>
   );
 }
+
