@@ -24,26 +24,10 @@ interface Props {
   params: Promise<{ id: string }>
 }
 
+export const dynamicParams = true
+
 export async function generateStaticParams() {
-  const defaultParams = [{ id: 'default' }]
-  try {
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-    if (url && key && !url.includes('placeholder')) {
-      const sb = createClient(url, key)
-      const { data, error } = await sb.from('movies').select('id').limit(2000)
-      if (!error && Array.isArray(data) && data.length > 0) {
-        const params = data
-          .filter((item: any) => item && item.id)
-          .map((item: any) => ({ id: String(item.id) }))
-        if (!params.some((p: any) => p.id === 'default')) {
-          params.push({ id: 'default' })
-        }
-        return params
-      }
-    }
-  } catch {}
-  return defaultParams
+  return []
 }
 
 export async function generateMetadata(

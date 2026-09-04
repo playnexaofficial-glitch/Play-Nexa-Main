@@ -24,17 +24,20 @@ export default function BottomNav() {
     if (href === '/') {
       return pathname === '/';
     }
+    if (href === '/games') {
+      return pathname === '/games' || pathname.startsWith('/games/');
+    }
     return pathname === href || pathname.startsWith(href + '/');
   };
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-[9999] border-t border-[#232338] bg-[#0D0D15]/95 backdrop-blur-md shadow-[0_-8px_24px_rgba(0,0,0,0.6)]"
+      className="fixed bottom-0 left-0 right-0 z-[9999] border-t border-zinc-800/80 bg-zinc-950/90 backdrop-blur-md shadow-[0_-8px_24px_rgba(0,0,0,0.7)]"
       style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
       role="navigation"
       aria-label="Main navigation"
     >
-      <div className="mx-auto flex h-[68px] max-w-md items-center justify-around px-2">
+      <div className="mx-auto flex h-[62px] max-w-md items-center justify-around px-2">
         {tabs.map((tab) => {
           const active = isActive(tab.href);
           const Icon = tab.icon;
@@ -43,30 +46,34 @@ export default function BottomNav() {
             <Link
               key={tab.href}
               href={tab.href}
-              className={`group flex min-h-[48px] min-w-[64px] flex-col items-center justify-center rounded-xl py-1 px-3 transition-all duration-150 active:scale-95 ${
-                active ? 'text-[#7C3AED]' : 'text-[#8E8EA0] hover:text-[#D1D5DB]'
+              className={`group relative flex min-h-[44px] min-w-[60px] flex-col items-center justify-center rounded-xl py-1 px-2.5 transition-all duration-150 active:scale-95 ${
+                active ? 'text-purple-400 font-semibold' : 'text-zinc-400 hover:text-zinc-200'
               }`}
               aria-label={tab.label}
               aria-current={active ? 'page' : undefined}
             >
-              <div
-                className={`relative flex items-center justify-center rounded-full px-3 py-1 transition-all duration-150 ${
-                  active ? 'bg-[#7C3AED]/15' : 'bg-transparent'
-                }`}
-              >
+              <div className="relative">
                 <Icon
                   size={20}
-                  strokeWidth={active ? 2.4 : 1.8}
-                  className="transition-transform duration-150"
+                  strokeWidth={active ? 2.5 : 1.9}
+                  className={`transition-all duration-200 ${
+                    active ? 'text-purple-400 drop-shadow-[0_0_8px_rgba(168,85,247,0.5)]' : ''
+                  }`}
                 />
               </div>
+
               <span
-                className={`mt-0.5 text-[11px] tracking-tight transition-colors duration-150 ${
-                  active ? 'font-bold text-[#7C3AED]' : 'font-medium text-[#8E8EA0]'
+                className={`mt-1 text-[11px] leading-tight transition-colors duration-150 ${
+                  active ? 'font-bold text-purple-400' : 'font-medium text-zinc-400'
                 }`}
               >
                 {tab.label}
               </span>
+
+              {/* Active subtle pill dot */}
+              {active && (
+                <span className="absolute bottom-1 w-1 h-1 rounded-full bg-purple-400 shadow-[0_0_6px_#a855f7]" />
+              )}
             </Link>
           );
         })}
@@ -74,4 +81,3 @@ export default function BottomNav() {
     </nav>
   );
 }
-

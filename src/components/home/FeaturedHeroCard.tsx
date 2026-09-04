@@ -22,13 +22,13 @@ export default function FeaturedHeroCard({
 
   const current = items[currentIndex]
 
-  // Auto-rotate every 5 seconds if multiple items
+  // Auto-rotate every 6 seconds if multiple items
   useEffect(() => {
     if (items.length <= 1) return
 
     timerRef.current = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % items.length)
-    }, 5000)
+    }, 6000)
 
     return () => {
       if (timerRef.current) clearInterval(timerRef.current)
@@ -55,32 +55,38 @@ export default function FeaturedHeroCard({
   }
 
   const contentType = (current as any).content_type
-  const channelName = current.channel_name || (current as any).channel || 'Play Nexa'
+  const channelName = current.channel_name || (current as any).channel || 'PlayNexa'
+  const genreList = (current as any).genre
 
   return (
     <div className="relative px-4">
-      {/* Cinematic Card Container */}
-      <div className="relative w-full aspect-video rounded-2xl overflow-hidden bg-[#141424] border border-[#24243B]/80 shadow-lg">
-        {/* Dominant Thumbnail */}
+      {/* 16:9 Cinematic Hero Poster */}
+      <div className="relative w-full aspect-video rounded-xl sm:rounded-2xl overflow-hidden bg-zinc-900 border border-zinc-800 shadow-2xl transform-gpu">
+        {/* Dominant HD Thumbnail */}
         <img
           src={current.thumbnail}
           alt={current.title}
           loading="eager"
-          className="w-full h-full object-cover transition-transform duration-500 hover:scale-102"
+          className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
         />
 
-        {/* Subtle Dark Gradient Overlay */}
+        {/* Cinematic Gradient Overlay */}
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
             background:
-              'linear-gradient(to top, #0D0D15 0%, rgba(13,13,21,0.75) 45%, rgba(13,13,21,0.15) 80%, transparent 100%)',
+              'linear-gradient(to top, rgba(9,9,11,0.98) 0%, rgba(9,9,11,0.68) 45%, rgba(9,9,11,0.15) 80%, transparent 100%)',
           }}
         />
 
         {/* Top Badges */}
-        <div className="absolute top-3 left-3 flex items-center gap-2 z-10">
-          <span className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider text-white bg-[#7C3AED] shadow-md">
+        <div className="absolute top-3 left-3 flex items-center gap-2 z-10 pointer-events-none">
+          {/* New Badge */}
+          <span className="px-2.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider text-zinc-950 bg-white shadow-md">
+            NEW
+          </span>
+
+          <span className="flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider text-white bg-purple-600 shadow-md">
             <Sparkles size={11} />
             Featured
           </span>
@@ -89,52 +95,46 @@ export default function FeaturedHeroCard({
             <span
               className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider ${
                 contentType === 'natok'
-                  ? 'bg-[#06B6D4] text-black font-extrabold'
-                  : 'bg-white/20 backdrop-blur-sm text-white'
+                  ? 'bg-cyan-400 text-zinc-950 font-black'
+                  : 'bg-zinc-800/80 backdrop-blur-sm text-zinc-200 border border-zinc-700/60'
               }`}
             >
               {contentType === 'natok' ? 'Natok' : 'Movie'}
-            </span>
-          )}
-
-          {current.isNew && (
-            <span className="px-2 py-0.5 rounded-md text-[10px] font-bold text-black bg-white">
-              New
             </span>
           )}
         </div>
 
         {/* Bottom Content Overlay */}
         <div className="absolute bottom-0 left-0 right-0 p-3.5 sm:p-4 z-10">
-          <p className="text-white font-bold text-base sm:text-lg mb-1 line-clamp-2 leading-snug drop-shadow-sm">
+          <p className="text-white font-extrabold text-base sm:text-lg mb-1 line-clamp-2 leading-snug drop-shadow-md">
             {current.title}
           </p>
 
-          <p className="text-[#9CA3AF] text-xs mb-3 truncate">
+          <p className="text-zinc-400 text-xs mb-3 truncate font-medium">
             {channelName}
-            {current.genre?.length ? ` · ${current.genre[0]}` : ''}
+            {Array.isArray(genreList) && genreList.length ? ` · ${genreList[0]}` : ''}
           </p>
 
-          {/* Action Buttons */}
+          {/* Action Buttons: Prominent Play Now Button */}
           <div className="flex items-center gap-2.5">
             <button
               type="button"
               onClick={() => handlePlay(current.id)}
-              className="flex-1 h-10 rounded-xl text-xs sm:text-sm font-bold text-black bg-white hover:bg-neutral-100 active:scale-98 transition-all flex items-center justify-center gap-1.5 shadow-md"
-              aria-label={`Watch ${current.title}`}
+              className="flex-1 h-10 sm:h-11 rounded-xl text-xs sm:text-sm font-bold text-white bg-purple-600 hover:bg-purple-500 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-lg shadow-purple-600/30"
+              aria-label={`Play Now ${current.title}`}
             >
-              <Play size={15} fill="currentColor" />
-              Watch Now
+              <Play size={16} fill="currentColor" />
+              <span>Play Now</span>
             </button>
 
             <button
               type="button"
               onClick={() => handleSave(current.id)}
-              className="h-10 px-3.5 rounded-xl text-xs sm:text-sm font-semibold text-white bg-white/15 hover:bg-white/20 active:scale-98 transition-all flex items-center justify-center gap-1.5 border border-white/10 backdrop-blur-sm"
+              className="h-10 sm:h-11 px-3.5 sm:px-4 rounded-xl text-xs sm:text-sm font-medium text-zinc-200 bg-zinc-900/80 hover:bg-zinc-800 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 border border-zinc-700/60 backdrop-blur-sm"
               aria-label={`Save ${current.title}`}
             >
-              <Bookmark size={15} />
-              Save
+              <Bookmark size={16} />
+              <span>Save</span>
             </button>
           </div>
         </div>
@@ -152,7 +152,7 @@ export default function FeaturedHeroCard({
               style={{
                 width: i === currentIndex ? '22px' : '6px',
                 height: '5px',
-                backgroundColor: i === currentIndex ? '#7C3AED' : '#2D2D44',
+                backgroundColor: i === currentIndex ? '#9333ea' : '#3f3f46',
               }}
               aria-label={`Go to slide ${i + 1}`}
             />

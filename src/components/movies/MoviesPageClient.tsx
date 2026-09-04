@@ -152,7 +152,13 @@ const emptyIconStyle: React.CSSProperties = {
 }
 
 // ── Component ─────────────────────────────
-export default function MoviesPageClient() {
+interface MoviesPageClientProps {
+  initialContentType?: 'all' | 'movie' | 'natok'
+}
+
+export default function MoviesPageClient({
+  initialContentType = 'all',
+}: MoviesPageClientProps = {}) {
   const router = useRouter()
   const [userId, setUserId] =
     useState<string | null>(null)
@@ -169,7 +175,7 @@ export default function MoviesPageClient() {
   const [selectedChannel, setSelectedChannel] =
     useState('all')
   const [contentType, setContentType] =
-    useState<'all' | 'movie' | 'natok'>('all')
+    useState<'all' | 'movie' | 'natok'>(initialContentType)
   const [isLoading, setIsLoading] =
     useState(true)
   const [bannerIndex, setBannerIndex] =

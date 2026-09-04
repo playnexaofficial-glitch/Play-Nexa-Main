@@ -360,33 +360,40 @@ export default function MovieWatchClient({ id, initialMovie }: MovieWatchClientP
 
         {/* Channel Row */}
         <div className="flex items-center gap-3 py-4 border-t border-b border-[#1A1A2E] mt-4">
-          <div className="w-10 h-10 rounded-full bg-[#1A1A2E] overflow-hidden flex-shrink-0">
-            <img
-              src={`https://unavatar.io/youtube/${movie.channel_id}`}
-              alt={movie.channel_name}
-              loading="lazy"
-              width={40}
-              height={40}
-              className="w-full h-full object-cover"
-            />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-white text-sm font-semibold truncate">
-              {movie.channel_name}
-            </p>
-            {channelVideoCount > 0 && (
-              <p
-                style={{
-                  color: '#9CA3AF',
-                  fontSize: 11,
-                  fontFamily: 'system-ui, sans-serif',
-                  marginTop: 2,
-                }}
-              >
-                {channelVideoCount} videos
+          <Link
+            href={`/channel/${movie.channel_id || encodeURIComponent(movie.channel_name || '')}`}
+            className="flex items-center gap-3 flex-1 min-w-0 group hover:opacity-90 active:scale-[0.98] transition-all"
+          >
+            <div className="w-10 h-10 rounded-full bg-[#1A1A2E] overflow-hidden flex-shrink-0 border border-zinc-800/80">
+              <img
+                src={`https://unavatar.io/youtube/${movie.channel_id}`}
+                alt={movie.channel_name}
+                loading="lazy"
+                width={40}
+                height={40}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+              />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-white text-sm font-semibold truncate group-hover:text-purple-300 transition-colors">
+                {movie.channel_name}
               </p>
-            )}
-          </div>
+              {channelVideoCount > 0 ? (
+                <p
+                  style={{
+                    color: '#9CA3AF',
+                    fontSize: 11,
+                    fontFamily: 'system-ui, sans-serif',
+                    marginTop: 2,
+                  }}
+                >
+                  {channelVideoCount} videos • View channel
+                </p>
+              ) : (
+                <p className="text-zinc-500 text-[11px] mt-0.5">View channel →</p>
+              )}
+            </div>
+          </Link>
           <button
             onClick={handleSubscribe}
             style={subscribeBtnStyle}
